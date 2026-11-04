@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#07130f">
+  <meta name="description" content="StylePilot AI helps independent fashion brands create product descriptions and social media content.">
+  <title>StylePilot AI — Fashion marketing, simplified</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#"><span class="brand-mark">S</span><span>StylePilot<span class="accent"> AI</span></span></a>
+    <span class="status"><i></i> YOUR CREATIVE STUDIO</span>
+  </header>
+  <main>
+    <section class="hero">
+      <div class="eyebrow">THE SMARTER WAY TO SELL STYLE</div>
+      <h1>Make your next<br><span>drop unforgettable.</span></h1>
+      <p>Turn a product photo and a few details into marketing content that feels like your brand.</p>
+    </section>
+    <section class="workspace">
+      <div class="panel form-panel">
+        <div class="panel-heading"><div><span class="step">01 / PRODUCT</span><h2>Tell us what you're selling</h2></div><span class="spark">✳</span></div>
+        <label class="upload" for="productImage">
+          <input id="productImage" type="file" accept="image/*">
+          <span class="upload-icon">＋</span><strong>Drop your product photo here</strong><small>or click to browse · JPG, PNG, WEBP</small>
+          <img id="imagePreview" alt="Product preview">
+        </label>
+        <div class="field"><label for="productName">PRODUCT NAME</label><input id="productName" placeholder="e.g. Oversized Essential Hoodie"></div>
+        <div class="field"><label for="category">CATEGORY</label><select id="category"><option value="Streetwear">Streetwear</option><option value="T-shirts">T-shirts</option><option value="Hoodies">Hoodies</option><option value="Pants">Pants</option><option value="Jackets">Jackets</option><option value="Accessories">Accessories</option><option value="Other">Other</option></select></div>
+        <div class="field"><label for="details">PRODUCT DETAILS</label><textarea id="details" rows="3" placeholder="Material, fit, colors, sizes, price, what makes it special..."></textarea></div>
+        <div class="field"><label for="tone">BRAND VOICE</label><select id="tone"><option value="Confident and modern">Confident & modern</option><option value="Premium and minimal">Premium & minimal</option><option value="Friendly and casual">Friendly & casual</option><option value="Bold and energetic">Bold & energetic</option></select></div>
+        <button id="generateBtn" class="primary-btn">Create my content <span>↗</span></button>
+        <p class="note">Demo mode · Generates editable content from built-in templates. AI API connection is not enabled yet.</p>
+      </div>
+      <div class="panel results-panel">
+        <div class="panel-heading"><div><span class="step">02 / YOUR CONTENT</span><h2>Ready for the spotlight</h2></div><span class="live-pill">CONTENT LAB</span></div>
+        <div id="emptyState" class="empty-state"><div class="empty-art">✳</div><h3>Your next campaign starts here.</h3><p>Add your product details, then hit create. Your copy will appear right here.</p></div>
+        <div id="results" class="results hidden">
+          <article class="result-card"><div class="result-title"><h3>Product description</h3><button class="copy-btn" data-copy="description">COPY ↗</button></div><p id="description"></p></article>
+          <article class="result-card"><div class="result-title"><h3>Instagram caption</h3><button class="copy-btn" data-copy="caption">COPY ↗</button></div><p id="caption"></p></article>
+          <article class="result-card"><div class="result-title"><h3>Ad headline & text</h3><button class="copy-btn" data-copy="ad">COPY ↗</button></div><p id="ad"></p></article>
+        </div>
+        <div class="tryon">
+          <div><span class="step">COMING NEXT</span><h3>Virtual try-on studio</h3><p>Preview your pieces on virtual models — without a photoshoot.</p></div>
+          <span class="tryon-icon">◈</span>
+          <small>PLANNED FEATURE · NOT CONNECTED</small>
+        </div>
+      </div>
+    </section>
+    <footer><span>STYLEPILOT AI</span><span>BUILT FOR INDEPENDENT FASHION BRANDS</span></footer>
+  </main>
+  <script src="script.js"></script>
+</body>
+</html>
