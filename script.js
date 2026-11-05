@@ -68,7 +68,7 @@ function classifyFashionSource(item, researchQuery = ""){
   const kidsProductMatch = kidsTerms.test(text) || kidsTerms.test(pathname.replace(/[-_/]+/g, " "));
 
   const fashionSignal = /\b(clothing|apparel|fashion|garment|outfit|kidswear|childrenswear|streetwear|hoodie|sweatshirt|tracksuit|jeans|t-shirt|boutique|brand|ready-to-wear|prêt-à-porter|vêtement|vetement|ensemble|robe|pyjama|jogging|survêtement|survetement|tenue|ملابس|لباس)\b/i.test(text);
-  const productSignal = /\b(product|products|shop|shop all|add to cart|buy now|collection|category|catalogue|catalog|store|online shop|online store|ensemble|set|sets|vêtements|vetements|robe|t-shirt|sweat|pyjama|kidswear|kids fashion|children's clothing|vêtements enfants|vetements enfants|baby clothes|tenue|ملابس|طقم)\b/i.test(text);
+  const productSignal = /\b(product|products|shop|shop all|add to cart|buy now|collection|category|catalogue|catalog|store|online shop|online store|clothes|clothing|apparel|outfit|ensemble|set|sets|vêtements|vetements|robe|t-shirt|sweat|pyjama|kidswear|kids fashion|children's clothing|vêtements enfants|vetements enfants|baby clothes|tenue|ملابس|طقم)\b/i.test(text);
   const hasSpecificKidsProduct = kidsProductMatch && fashionSignal && productSignal;
 
   const editorialSignal = /\b(brand(s)? worth knowing|must[- ]know|where to shop|guide to|fashion brands|clothing brands|shopping guide|top brands|best brands|directory|blog|editorial|store locator|our stores|find a store|stores in tunisia|store locations|magasins en tunisie)\b/i.test(title + " " + pathname + " " + content.slice(0, 1400));
@@ -251,7 +251,7 @@ if (researchBtn) {
           sources.appendChild(card);
         });
       }
-      status.textContent = "Research complete · " + (data.results?.length || 0) + " sources found.";
+      status.textContent = "Research complete · " + verifiedSourceItems.length + " relevant sources from " + (data.results?.length || 0) + " results.";
       $("researchSources").scrollIntoView({behavior:"smooth",block:"nearest"});
     } catch (error) {
       status.textContent = error.message + " Check that the local server is running and your Tavily key is set in .env.";
