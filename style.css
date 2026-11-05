@@ -8,3 +8,15 @@
 .research-chip{border:1px solid #49613a;background:#10251c;color:var(--lime);border-radius:20px;padding:7px 11px;font:600 10px 'DM Sans',sans-serif;cursor:pointer}
 .research-chip:hover{background:#1a3524}
 #copyResearchBtn{white-space:nowrap}
+
+/* Evidence-based marketing plan */
+.marketing-plan{margin-top:14px;padding:18px;background:#0a1711;border:1px solid #49613a;border-radius:12px}
+.marketing-plan>h3{font:600 17px 'Space Grotesk',sans-serif;margin:0 0 8px;color:var(--lime)}
+.plan-note,.plan-sources{font-size:11px;line-height:1.7;color:var(--muted)}
+.marketing-plan-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:13px}
+.marketing-plan-card{padding:14px;background:#10231a;border:1px solid #294333;border-radius:9px}
+.marketing-plan-card h4{font:600 12px 'Space Grotesk',sans-serif;margin:0 0 9px;color:var(--text)}
+.marketing-plan-card p{font-size:11px;line-height:1.7;color:#c2cec4;margin:0 0 10px}
+.marketing-plan-card strong{font-size:10px;line-height:1.6;color:var(--lime)}
+.plan-sources{margin:13px 0 0}
+@media(max-width:760px){.marketing-plan-grid{grid-template-columns:1fr}}
