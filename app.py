@@ -5,11 +5,21 @@ import requests
 
 load_dotenv()
 
-app = Flask(__name__, static_folder=".", static_url_path="")
+# Serve only the two public frontend assets below. Do not expose the project
+# directory as a static folder: it contains the private .env file.
+app = Flask(__name__, static_folder=None)
 
 @app.get("/")
 def home():
     return send_from_directory(".", "index.html")
+
+@app.get("/style.css")
+def stylesheet():
+    return send_from_directory(".", "style.css")
+
+@app.get("/script.js")
+def frontend_script():
+    return send_from_directory(".", "script.js")
 
 @app.get("/api/health")
 def health():
