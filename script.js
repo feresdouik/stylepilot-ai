@@ -42,14 +42,16 @@ function classifyFashionSource(item, researchQuery = ""){
   const text = [title, item.content || ""].join(" ");
   let hostname = "";
   let pathname = "";
+  let hasMetaAdId = false;
   try {
     const parsed = new URL(url);
     hostname = parsed.hostname.toLowerCase();
     pathname = parsed.pathname.toLowerCase();
+    hasMetaAdId = parsed.searchParams.has("id");
   } catch {}
   const metaAdsLibraryUrl =
     (hostname === "facebook.com" || hostname.endsWith(".facebook.com")) &&
-    /\/ads\/library\/?/.test(pathname);
+    /\/ads\/library\/?/.test(pathname) && hasMetaAdId;
   const socialPlatform = /(^|\.)(facebook|instagram|tiktok|pinterest)\.com$/.test(hostname);
   const localMention = /\b(Tunisia|Tunisian|Tunisie|Tunisien(ne)?s?|en Tunisie|livraison partout en Tunisie|Tunis|Sousse|Sfax|Monastir|Nabeul|Bizerte|Kairouan|Ariana|Ben Arous)\b|\+216|\bTND\b/i.test(text);
   const localDomain = hostname.endsWith(".tn");
