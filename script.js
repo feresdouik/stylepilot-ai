@@ -147,8 +147,15 @@ if (buildPlanBtn) {
       return fashionTerms.test(sourceText);
     });
     latestPlanSources = relevantResults;
-    const localEvidencePattern = /\.tn\b|\bTND\b|\bDT\b|\bTunisia\b|\bTunisian\b|\bSousse\b|\bSfax\b|\bMonastir\b|\bNabeul\b|\bBizerte\b|\bKairouan\b|\bAriana\b|\bBen Arous\b/i;
-    const localSources = relevantResults.filter(item => localEvidencePattern.test([item.url || "", item.title || "", item.content || ""].join(" ")));
+    const localSources = relevantResults.filter(item => {
+      const url = item.url || "";
+      const text = [item.title || "", item.content || ""].join(" ");
+      let isTnDomain = false;
+      try { isTnDomain = new URL(url).hostname.toLowerCase().endsWith(".tn"); } catch {}
+      const mentionsTunisia = /\\b(Tunisia|Tunisian|Tunis|Sousse|Sfax|Monastir|Nabeul|Bizerte|Kairouan|Ariana)\\b/i.test(text);
+      const hasLocalCommerceSignal = /\\b(TND|DT|dinar|dinars|livraison|delivery|shop now|add to cart|price|prix|boutique|store)\\b/i.test(text);
+      return isTnDomain || (mentionsTunisia && hasLocalCommerceSignal);
+    });
     const internationalSources = relevantResults.filter(item => !localSources.includes(item));
     const query = (latestResearchData.query || "").toLowerCase();
     const evidence = [latestResearchData.answer || "", ...relevantResults.map(item => item.content || "")].join(" ").toLowerCase();
@@ -200,7 +207,7 @@ if (buildPlanBtn) {
     panel.appendChild(heading);
     const note = document.createElement("p");
     note.className = "plan-note";
-    note.textContent = "Fashion sources: " + relevantResults.length + " of " + results.length + ". Tunisia-related evidence: " + localSources.length + ". International inspiration: " + internationalSources.length + ". " + (localSources.length ? "Local references detected; verify they are actual retailers or market evidence." : "No clear Tunisia-specific retail evidence found. Treat these trends as international inspiration and validate locally before buying stock or spending on ads.") + " Signals: " + observed + ". Search results are not proof of sales demand.";
+    note.textContent = "Relevant fashion sources: " + relevantResults.length + " of " + results.length + ". Potential Tunisian retail/market sources: " + localSources.length + ". International fashion sources: " + internationalSources.length + ". " + (localSources.length ? "Local signals detected. Check each source: a Tunisia mention alone is not proof of local retail demand." : "No clear Tunisia-specific retail evidence found. These are international fashion signals only; do not treat them as proof of Tunisian demand.") + " Signals: " + observed + ". Search results are not proof of sales demand.";
     panel.appendChild(note);
     const grid = document.createElement("div");
     grid.className = "marketing-plan-grid";
