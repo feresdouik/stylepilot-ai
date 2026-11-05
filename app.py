@@ -46,7 +46,7 @@ def research():
                 "Content-Type": "application/json",
             },
             json={
-                "query": f"{query} Tunisia Tunisian online clothing sellers ecommerce shops product pages current prices TND DT order online delivery cash on delivery Facebook Instagram sellers DM WhatsApp. Prioritize active product listings and posts with clear purchase instructions; exclude general fashion articles, trend roundups, store directories, and pages that only mention clothing without showing how to buy.",
+                "query": f"{query} Tunisia Tunisian active Meta Ads Library ads facebook.com/ads/library advertiser pages Facebook Instagram commercial advertisements kids clothing sets. Find public Meta Ad Library results for country Tunisia and active ads, include direct ad library links when available. Also find online sellers with product posts, visible prices, WhatsApp Messenger Instagram DM ordering and delivery in Tunisia. Separate actual Meta Ads Library ad URLs from ordinary social posts and seller pages. Exclude marketing articles, tutorials, directories and unrelated fashion content. Never infer paid-ad status from an ordinary Facebook or Instagram post.",
                 "search_depth": "advanced",
                 "max_results": 12,
                 "topic": "general",
