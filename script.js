@@ -59,44 +59,53 @@ function classifyFashionSource(item, researchQuery = ""){
   const isIndividualMetaAd = isMetaAdsLibrary && hasIndividualAdId;
   const isPageAdsArchive = isMetaAdsLibrary && hasPageAdId;
   const socialPlatform = /(^|\.)(facebook|instagram|tiktok|pinterest)\.com$/.test(hostname);
+  const isLocalDomain = hostname.endsWith(".tn");
+
+  // Search/hashtag/reel-discovery pages aggregate unrelated posts and are not individual sellers.
+  const aggregatePath = /\/(popular|explore|hashtag|hashtags|search|directory)(\/|$)/i.test(pathname);
+  const aggregateTitle = /\b(?:\d{2,}|900)\+?\s*reels?\b|\bon reels\b|\bpopular (?:on )?instagram\b|\binstagram popular\b/i.test(title);
+  const marketplaceDomain = /(^|\.)((aliexpress|ubuy|goxip))\./i.test(hostname);
+  if (marketplaceDomain || (socialPlatform && (aggregatePath || aggregateTitle))) return "Irrelevant";
 
   const localMention = /\b(Tunisia|Tunisian|Tunisie|Tunisien(ne)?s?|en Tunisie|livraison partout en Tunisie|Tunis|Sousse|Sfax|Monastir|Nabeul|Bizerte|Kairouan|Ariana|Ben Arous)\b|\+216|\bTND\b|تونس|تونسي/i.test(text);
-  const localEvidence = hostname.endsWith(".tn") || localMention;
+  const localEvidence = isLocalDomain || localMention;
 
-  const kidsQuery = /\b(kids?|children|childrenswear|kidswear|baby|babies|toddler|infant|boys|girls|enfants?|bébé|bebe)\b/i.test(researchQuery);
-  const kidsTerms = /\b(kids?|children|childrenswear|kidswear|baby|babies|toddler|infant|boys|girls|enfant|enfants|bébé|bebe|fille|filles|garçon|garcons|kids sets|matching sets|ensemble(s)? enfants?|vêtements pour enfants|vetements pour enfants|vêtements enfants|vetements enfants|vêtements enfant|vetements enfant|tenue enfant|survêtement enfant|survetement enfant|babywear|children's? (?:summer|winter|casual|formal|newborn) clothing|kids? (?:summer|winter|casual|formal) clothing|children's? clothing sets?)\b/i;
+  const kidsQuery = /\b(kids?|children|childrenswear|children's clothing|baby|babies|toddler|infant|boys|girls|enfants?|bébé|bebe)\b/i.test(researchQuery);
+  const kidsTerms = /\b(kids?|children|childrenswear|children's clothing|baby|babies|toddler|infant|boys|girls|enfant|enfants|bébé|bebe|fille|filles|garçon|garcons|ensemble(s)? enfants?|vêtements pour enfants|vetements pour enfants|vêtements enfants|vetements enfants|tenue enfant|survêtement enfant|survetement enfant|babywear)\b/i;
   const kidsProductMatch = kidsTerms.test(text) || kidsTerms.test(pathname.replace(/[-_/]+/g, " "));
 
-  const fashionSignal = /\b(clothing|apparel|fashion|garment|outfit|kidswear|childrenswear|streetwear|hoodie|sweatshirt|tracksuit|jeans|t-shirt|boutique|brand|ready-to-wear|prêt-à-porter|vêtement|vetement|ensemble|robe|pyjama|jogging|survêtement|survetement|tenue|ملابس|لباس)\b/i.test(text);
-  const productSignal = /\b(product|products|shop|shop all|add to cart|buy now|collection|category|catalogue|catalog|store|online shop|online store|clothes|clothing|apparel|outfit|ensemble|set|sets|vêtements|vetements|robe|t-shirt|sweat|pyjama|kidswear|kids fashion|children's clothing|vêtements enfants|vetements enfants|baby clothes|tenue|ملابس|طقم)\b/i.test(text);
-  const hasSpecificKidsProduct = kidsProductMatch && fashionSignal && productSignal;
+  const streetwearQuery = /\b(streetwear|street wear|urban wear|men'?s|menswear|homme|unisex)\b/i.test(researchQuery);
+  const streetwearTerms = /\b(streetwear|street wear|urban wear|men|menswear|homme|hommes|unisex|baggy|cargo|oversized|boxy|hoodie|sweatshirt|tracksuit|jogger|jeans|t-?shirts?|tees|pantalon|survêtement|survetement|sweat|veste|short|mode homme|vêtements homme|vetements homme)\b/i;
+  const categoryMatch = kidsQuery ? kidsProductMatch : (!streetwearQuery || streetwearTerms.test(text));
+
+  const fashionSignal = /\b(clothing|apparel|fashion|garment|outfit|streetwear|hoodie|sweatshirt|tracksuit|jeans|t-?shirt|tee|boutique|brand|ready-to-wear|prêt-à-porter|vêtement|vetement|ensemble|robe|pyjama|jogging|survêtement|survetement|tenue|ملابس|لباس)\b/i.test(text);
+  const productSignal = /\b(hoodie|sweatshirt|tracksuit|jogger|jeans?|cargo|pants?|trousers?|shorts?|t-?shirts?|tees|polo|shirt|sweater|jumper|jacket|coat|dress|robe|skirt|pyjama|pajama|leggings|survêtement|survetement|pantalon|veste|pull|sweat|ensemble|outfit|clothing|apparel|garment|vêtements|vetements|ملابس|لباس)\b/i.test(text);
+  const hasRelevantProduct = fashionSignal && productSignal && categoryMatch;
 
   const editorialSignal = /\b(brand(s)? worth knowing|must[- ]know|where to shop|guide to|fashion brands|clothing brands|shopping guide|top brands|best brands|directory|blog|editorial|store locator|our stores|find a store|stores in tunisia|store locations|magasins en tunisie)\b/i.test(title + " " + pathname + " " + content.slice(0, 1400));
-  const commerceSignal = /\b(shop|shop now|online store|online shop|add to cart|product listing|buy online|order online|price|prices|prix|livraison|delivery|collection|catalogue|catalog|ready-to-wear|prêt-à-porter|disponible|commander|commande|whatsapp|messenger|instagram dm|send a message|inbox|cash on delivery|paiement à la livraison)\b/i.test(text);
-  const explicitOrderSignal = /\b(order now|order online|place an order|to order|order via|order by|dm to order|message to order|commander maintenant|pour commander|commandez|commande par dm|commander par dm|dm pour commander|commande via whatsapp|order via whatsapp|اطلب الآن|اطلب عبر|للطلب|للحجز|تأكيد الطلب)\b/i.test(text);
-  const verifiedOrderEvidence = commerceSignal && explicitOrderSignal;
   const storeLocatorOnly = /\b(store locator|our stores|find a store|stores in tunisia|store locations|magasins en tunisie|visit our store|visit our stores)\b/i.test(title + " " + pathname + " " + content.slice(0, 1400));
-
-  // An individual Ad Library ad is verified only when its own indexed evidence
-  // matches the requested product category and Tunisia; an arbitrary ad ID is not enough.
-  if (isIndividualMetaAd && localEvidence && hasSpecificKidsProduct) return "Verified Meta Ad";
-
   if (editorialSignal || storeLocatorOnly) return "Irrelevant";
-  if (kidsQuery && !hasSpecificKidsProduct) return "Irrelevant";
-  if (!fashionSignal && !kidsProductMatch) return "Irrelevant";
+  if (!hasRelevantProduct) {
+    if (localEvidence && fashionSignal && !kidsQuery) return "Local Fashion Brand";
+    return "Irrelevant";
+  }
 
-  // A page-scoped Ad Library archive can support seller verification, but is not
-  // itself counted as an individual ad. Require product, local and order evidence.
-  const validSellerSource = socialPlatform || isPageAdsArchive || hostname.endsWith(".tn");
-  if (localEvidence && hasSpecificKidsProduct && verifiedOrderEvidence && validSellerSource) {
+  const commerceSignal = /\b(shop|shop now|online store|online shop|add to cart|product listing|buy now|buy online|order online|price|prices|prix|livraison|delivery|collection|catalogue|catalog|available|disponible|commander|commande|whatsapp|messenger|instagram dm|send a message|inbox|cash on delivery|paiement à la livraison|payment on delivery)\b/i.test(text);
+  const explicitOrderSignal = /\b(order now|order online|place an order|for orders|to order|order via|order by|dm to order|message to order|commander maintenant|pour commander|commandez|commande par dm|commander par dm|dm pour commander|commande via whatsapp|order via whatsapp|send us a message|message us to order|اطلب الآن|اطلب عبر|للطلب|تأكيد الطلب)\b/i.test(text);
+  const verifiedOrderEvidence = commerceSignal && explicitOrderSignal;
+
+  // An individual ad needs its own ID and matching local product evidence.
+  if (isIndividualMetaAd && localEvidence && hasRelevantProduct) return "Verified Meta Ad";
+
+  // A page archive is not an individual ad; it can only support seller status with explicit order evidence.
+  const validSellerSource = socialPlatform || isPageAdsArchive || isLocalDomain;
+  if (localEvidence && hasRelevantProduct && verifiedOrderEvidence && validSellerSource) {
     return "Verified Online Seller";
   }
 
-  if (kidsQuery && localEvidence && hasSpecificKidsProduct) return "Potential Competitor";
-  if (!kidsQuery && localEvidence && socialPlatform && productSignal && commerceSignal) return "Verified Online Seller";
-  if (!kidsQuery && localEvidence && commerceSignal && productSignal) return "Local competitor";
+  if (localEvidence && hasRelevantProduct && socialPlatform) return "Potential Competitor";
+  if (localEvidence && hasRelevantProduct && (isLocalDomain || isPageAdsArchive)) return "Local competitor";
   if (localEvidence && fashionSignal) return "Local Fashion Brand";
-  if (kidsQuery) return "Irrelevant";
   return "Global Inspiration";
 }
 $("generateBtn").addEventListener("click", () => {
@@ -203,9 +212,9 @@ if (researchBtn) {
       $("marketingPlan")?.replaceChildren();
       const sourceItems = Array.isArray(data.results) ? data.results : [];
       const verifiedSourceItems = sourceItems.filter(item => classifyFashionSource(item, query) !== "Irrelevant");
-      const localKidsCompetitors = sourceItems.filter(item => classifyFashionSource(item, query) === "Verified Online Seller");
+      const verifiedOnlineSellers = sourceItems.filter(item => classifyFashionSource(item, query) === "Verified Online Seller");
       const metaAdSources = sourceItems.filter(item => classifyFashionSource(item, query) === "Verified Meta Ad");
-      const potentialKidsReferences = sourceItems.filter(item => classifyFashionSource(item, query) === "Potential Competitor");
+      const potentialLocalCompetitors = sourceItems.filter(item => classifyFashionSource(item, query) === "Potential Competitor");
       const evidenceWarning = verifiedSourceItems.length
         ? "Evidence note: Meta Ads Library links are counted separately from sellers. A commercial social post is not automatically a paid ad. Verify each seller\u2019s current products, prices and delivery manually. "
         : "Evidence warning: none of the returned sources passed the relevance checks. No reliable Tunisia trend or competitor finding can be made from these results. Try a narrower search. ";
@@ -281,12 +290,12 @@ if (buildPlanBtn) {
     const results = Array.isArray(latestResearchData.results) ? latestResearchData.results : [];
     const relevantResults = results.filter(item => classifyFashionSource(item, latestResearchData.query || "") !== "Irrelevant");
     latestPlanSources = relevantResults;
-    const directKidswear = relevantResults.filter(item => classifyFashionSource(item, latestResearchData.query || "") === "Verified Online Seller");
-    const potentialKids = relevantResults.filter(item => classifyFashionSource(item, latestResearchData.query || "") === "Potential Competitor");
+    const directOnlineSellers = relevantResults.filter(item => classifyFashionSource(item, latestResearchData.query || "") === "Verified Online Seller");
+    const potentialCompetitors = relevantResults.filter(item => classifyFashionSource(item, latestResearchData.query || "") === "Potential Competitor");
     const localCompetitors = relevantResults.filter(item => classifyFashionSource(item, latestResearchData.query || "") === "Local competitor");
     const localBrands = relevantResults.filter(item => classifyFashionSource(item, latestResearchData.query || "") === "Local Fashion Brand");
     const globalSources = relevantResults.filter(item => classifyFashionSource(item, latestResearchData.query || "") === "Global Inspiration");
-    const localSources = [...directKidswear, ...potentialKids, ...localCompetitors, ...localBrands];
+    const localSources = [...directOnlineSellers, ...potentialCompetitors, ...localCompetitors, ...localBrands];
     const internationalSources = globalSources;
     const query = (latestResearchData.query || "").toLowerCase();
     const evidence = [latestResearchData.answer || "", ...relevantResults.map(item => item.content || "")].join(" ").toLowerCase();
@@ -338,7 +347,7 @@ if (buildPlanBtn) {
     panel.appendChild(heading);
     const note = document.createElement("p");
     note.className = "plan-note";
-    note.textContent = "Relevant sources: " + relevantResults.length + " of " + results.length + ". Verified Meta Ads Library ads: " + relevantResults.filter(item => classifyFashionSource(item, latestResearchData.query || "") === "Verified Meta Ad").length + ". Verified online sellers: " + directKidswear.length + ". Potential competitors (sales not verified): " + potentialKids.length + ". Other local competitors: " + localCompetitors.length + ". Tunisian fashion brands: " + localBrands.length + ". Global inspiration: " + globalSources.length + ". " + (directKidswear.length ? "Online kidswear competitors found. Check each source for comparable sets and current prices." : "No direct online local kidswear competitor was verified by the available snippets. Potential references are not counted as confirmed sellers.") + " A Tunisia mention or a general children category alone is not proof of a matching product listing or local sales demand. Signals: " + observed + ". Search results are not proof of sales demand.";
+    note.textContent = "Relevant sources: " + relevantResults.length + " of " + results.length + ". Verified Meta Ads Library ads: " + relevantResults.filter(item => classifyFashionSource(item, latestResearchData.query || "") === "Verified Meta Ad").length + ". Verified online sellers: " + directOnlineSellers.length + ". Potential competitors (sales not verified): " + potentialCompetitors.length + ". Other local competitors: " + localCompetitors.length + ". Tunisian fashion brands: " + localBrands.length + ". Global inspiration: " + globalSources.length + ". " + (directOnlineSellers.length ? "Online local online clothing competitors found. Check each source for comparable sets and current prices." : "No direct online local clothing competitor was verified by the available snippets. Potential references are not counted as confirmed sellers.") + " A Tunisia mention or a general children category alone is not proof of a matching product listing or local sales demand. Signals: " + observed + ". Search results are not proof of sales demand.";
     panel.appendChild(note);
     const grid = document.createElement("div");
     grid.className = "marketing-plan-grid";
@@ -357,7 +366,7 @@ if (buildPlanBtn) {
     panel.appendChild(grid);
     const sourceLine = document.createElement("p");
     sourceLine.className = "plan-sources";
-    sourceLine.textContent = "VERIFIED ONLINE KIDSWEAR COMPETITORS: " + (directKidswear.map(item => item.title || "Source").join(" / ") || "None identified") + " | POTENTIAL KIDSWEAR REFERENCES: " + (potentialKids.map(item => item.title || "Source").join(" / ") || "None identified") + " | OTHER LOCAL COMPETITORS: " + (localCompetitors.map(item => item.title || "Source").join(" / ") || "None identified") + " | TUNISIAN FASHION BRANDS: " + (localBrands.map(item => item.title || "Source").join(" / ") || "None identified") + " | GLOBAL INSPIRATION: " + (globalSources.map(item => item.title || "Source").join(" / ") || "None identified");
+    sourceLine.textContent = "VERIFIED ONLINE KIDSWEAR COMPETITORS: " + (directOnlineSellers.map(item => item.title || "Source").join(" / ") || "None identified") + " | POTENTIAL KIDSWEAR REFERENCES: " + (potentialCompetitors.map(item => item.title || "Source").join(" / ") || "None identified") + " | OTHER LOCAL COMPETITORS: " + (localCompetitors.map(item => item.title || "Source").join(" / ") || "None identified") + " | TUNISIAN FASHION BRANDS: " + (localBrands.map(item => item.title || "Source").join(" / ") || "None identified") + " | GLOBAL INSPIRATION: " + (globalSources.map(item => item.title || "Source").join(" / ") || "None identified");
     panel.appendChild(sourceLine);
     panel.classList.remove("hidden");
     if ($("copyMarketingPlanBtn")) $("copyMarketingPlanBtn").disabled = false;
