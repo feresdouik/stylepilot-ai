@@ -152,8 +152,8 @@ if (buildPlanBtn) {
       const text = [item.title || "", item.content || ""].join(" ");
       let isTnDomain = false;
       try { isTnDomain = new URL(url).hostname.toLowerCase().endsWith(".tn"); } catch {}
-      const mentionsTunisia = /\\b(Tunisia|Tunisian|Tunis|Sousse|Sfax|Monastir|Nabeul|Bizerte|Kairouan|Ariana)\\b/i.test(text);
-      const hasLocalCommerceSignal = /\\b(TND|DT|dinar|dinars|livraison|delivery|shop now|add to cart|price|prix|boutique|store)\\b/i.test(text);
+      const mentionsTunisia = /\b(Tunisia|Tunisian|Tunis|Sousse|Sfax|Monastir|Nabeul|Bizerte|Kairouan|Ariana)\b/i.test(text);
+      const hasLocalCommerceSignal = /\b(TND|DT|dinar|dinars|livraison|delivery|shop now|add to cart|price|prix|boutique|store)\b/i.test(text);
       return isTnDomain || (mentionsTunisia && hasLocalCommerceSignal);
     });
     const internationalSources = relevantResults.filter(item => !localSources.includes(item));
