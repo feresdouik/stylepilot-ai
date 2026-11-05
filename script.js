@@ -44,6 +44,7 @@ document.querySelectorAll(".copy-btn").forEach(button => {
 
 // Tavily-powered market research (requires the local Flask backend and a private .env key).
 const researchBtn = $("researchBtn");
+let latestResearchData = null;
 if (researchBtn) {
   researchBtn.addEventListener("click", async () => {
     const query = sentenceCase($("researchQuery").value);
@@ -70,6 +71,9 @@ if (researchBtn) {
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Research request failed.");
+      latestResearchData = data;
+      $("marketingPlan")?.classList.add("hidden");
+      $("marketingPlan")?.replaceChildren();
       answer.textContent = data.answer || "Tavily returned sources but no short answer. Explore the links below.";
       answer.classList.remove("hidden");
       tools?.classList.remove("hidden");
@@ -120,3 +124,74 @@ document.querySelectorAll(".research-chip").forEach((chip) => {
     $("researchBtn").click();
   });
 });
+
+
+// Build practical tests from the themes actually present in the latest Tavily results.
+const buildPlanBtn = $("buildMarketingPlanBtn");
+if (buildPlanBtn) {
+  buildPlanBtn.addEventListener("click", () => {
+    const panel = $("marketingPlan");
+    if (!latestResearchData || !panel) return;
+    const results = Array.isArray(latestResearchData.results) ? latestResearchData.results : [];
+    const evidence = [latestResearchData.answer || "", ...results.map(item => item.content || "")].join(" ").toLowerCase();
+    const signals = [
+      ["oversized / boxy fit", /oversiz|boxy|relaxed fit/.test(evidence)],
+      ["baggy / wide-leg bottoms", /baggy|wide[- ]leg|jorts|cargo pants/.test(evidence)],
+      ["graphic / racing details", /graphic|print|racing|motorsport/.test(evidence)],
+      ["minimal / neutral styling", /minimal|neutral|black|monochrome/.test(evidence)],
+      ["heavyweight fabrics", /heavyweight|heavy weight|fleece|gsm|thick cotton/.test(evidence)]
+    ].filter(item => item[1]).map(item => item[0]);
+    const observed = signals.length ? signals.slice(0, 3).join(", ") : "the themes and product positioning in the sources";
+    const sourceNames = results.slice(0, 3).map(item => item.title || "Source").filter(Boolean);
+    const cards = [
+      {
+        title: "01 · Product test",
+        body: signals.length
+          ? "Test one low-quantity sample that uses " + observed + ". Keep the first run small or use pre-orders; confirm demand before restocking."
+          : "Choose one product idea that appears repeatedly in the research answer or source snippets. Test with a sample or pre-orders before buying stock.",
+        action: "Measure confirmed orders, not likes or messages."
+      },
+      {
+        title: "02 · Content test",
+        body: "Create a 10–15 second Reel showing the fit, fabric and details of the product. Use the strongest observed angle (" + observed + ") as the opening hook, then show front, back and close-up views.",
+        action: "Publish two different hooks for the same product and compare saves, profile visits and serious enquiries."
+      },
+      {
+        title: "03 · Ad test",
+        body: "Run two small creative tests: one focused on the product benefit and one focused on styling / outfit inspiration. Show price, available sizes and cash-on-delivery information clearly.",
+        action: "Track cost per confirmed order and pause the weaker creative; don't scale based on message volume alone."
+      }
+    ];
+    panel.replaceChildren();
+    const heading = document.createElement("h3");
+    heading.textContent = "Your evidence-based marketing plan";
+    panel.appendChild(heading);
+    const note = document.createElement("p");
+    note.className = "plan-note";
+    note.textContent = "Research signals detected: " + observed + ". These are test ideas based on search results, not proof of Tunisian sales demand.";
+    panel.appendChild(note);
+    const grid = document.createElement("div");
+    grid.className = "marketing-plan-grid";
+    cards.forEach(item => {
+      const card = document.createElement("article");
+      card.className = "marketing-plan-card";
+      const title = document.createElement("h4");
+      title.textContent = item.title;
+      const body = document.createElement("p");
+      body.textContent = item.body;
+      const action = document.createElement("strong");
+      action.textContent = item.action;
+      card.append(title, body, action);
+      grid.appendChild(card);
+    });
+    panel.appendChild(grid);
+    if (sourceNames.length) {
+      const sourceLine = document.createElement("p");
+      sourceLine.className = "plan-sources";
+      sourceLine.textContent = "Based on sources returned: " + sourceNames.join(" · ");
+      panel.appendChild(sourceLine);
+    }
+    panel.classList.remove("hidden");
+    panel.scrollIntoView({behavior:"smooth", block:"nearest"});
+  });
+}
