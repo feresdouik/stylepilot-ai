@@ -11,6 +11,14 @@ imageInput.addEventListener("change", () => {
   document.querySelector(".upload small").textContent = "Photo ready";
 });
 function sentenceCase(value){return value.trim().replace(/\s+/g," ");}
+function safeHttpUrl(value) {
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" || url.protocol === "http:" ? url.href : "";
+  } catch {
+    return "";
+  }
+}
 
 function classifyFashionSource(item, researchQuery = ""){
   const url = item.url || "";
@@ -84,6 +92,33 @@ document.querySelectorAll(".copy-btn").forEach(button => {
 const researchBtn = $("researchBtn");
 let latestResearchData = null;
 let latestPlanSources = [];
+
+const copyResearchBtn = $("copyResearchBtn");
+if (copyResearchBtn) {
+  copyResearchBtn.addEventListener("click", async () => {
+    if (!latestResearchData) return;
+    const data = latestResearchData;
+    const report = [
+      "STYLEPILOT AI MARKET RESEARCH",
+      "Query: " + (data.query || ""),
+      "",
+      "EVIDENCE SUMMARY",
+      $("researchAnswer")?.textContent || "No evidence summary available.",
+      "",
+      "SOURCES",
+      ...(Array.isArray(data.results) ? data.results : []).map((item, index) =>
+        (index + 1) + ". " + (item.title || "Source") + " — " + (item.url || "")
+      )
+    ].join("\n");
+    try {
+      await navigator.clipboard.writeText(report);
+      copyResearchBtn.textContent = "COPIED ✓";
+      setTimeout(() => copyResearchBtn.textContent = "COPY FULL REPORT", 1500);
+    } catch {
+      copyResearchBtn.textContent = "COPY UNAVAILABLE";
+    }
+  });
+}
 if (researchBtn) {
   researchBtn.addEventListener("click", async () => {
     const query = sentenceCase($("researchQuery").value);
@@ -135,16 +170,6 @@ if (researchBtn) {
       answer.textContent = evidenceWarning + evidenceSummary + " Open the classified source links below. StylePilot does not present Tavily's unverified generated summary as a Tunisia market finding.";
       answer.classList.remove("hidden");
       tools?.classList.remove("hidden");
-      $("copyResearchBtn")?.addEventListener("click", async () => {
-        const report = [`STYLEPILOT AI MARKET RESEARCH`, `Query: ${query}`, "", data.answer || "", "", "SOURCES", ...(data.results || []).map((item, index) => `${index + 1}. ${item.title || "Source"} — ${item.url}`)].join("\n");
-        try {
-          await navigator.clipboard.writeText(report);
-          $("copyResearchBtn").textContent = "COPIED ✓";
-          setTimeout(() => $("copyResearchBtn").textContent = "COPY FULL REPORT", 1500);
-        } catch {
-          $("copyResearchBtn").textContent = "COPY UNAVAILABLE";
-        }
-      }, {once:true});
       if (Array.isArray(data.results) && data.results.length) {
         const heading = document.createElement("h3");
         heading.textContent = "Sources";
@@ -152,17 +177,21 @@ if (researchBtn) {
         data.results.forEach((item) => {
           const card = document.createElement("article");
           card.className = "source-card";
-          const link = document.createElement("a");
-          link.href = item.url;
-          link.target = "_blank";
-          link.rel = "noopener noreferrer";
-          link.textContent = item.title || "Open source";
+          const sourceUrl = safeHttpUrl(item.url);
+          const sourceTitle = item.title || "Untitled source";
+          const sourceHeading = document.createElement(sourceUrl ? "a" : "strong");
+          sourceHeading.textContent = sourceTitle;
+          if (sourceUrl) {
+            sourceHeading.href = sourceUrl;
+            sourceHeading.target = "_blank";
+            sourceHeading.rel = "noopener noreferrer";
+          }
           const classification = document.createElement("small");
           classification.className = "source-classification";
           classification.textContent = classifyFashionSource(item, latestResearchData?.query || "");
           const snippet = document.createElement("p");
           snippet.textContent = item.content || "";
-          card.append(link, classification, snippet);
+          card.append(sourceHeading, classification, snippet);
           sources.appendChild(card);
         });
       }
@@ -194,7 +223,6 @@ if (buildPlanBtn) {
     const panel = $("marketingPlan");
     if (!latestResearchData || !panel) return;
     const results = Array.isArray(latestResearchData.results) ? latestResearchData.results : [];
-    const fashionTerms = /\b(clothing|apparel|fashion|garment|outfit|kidswear|childrenswear|streetwear|t-shirt|tshirt|hoodie|sweatshirt|tracksuit|jeans|clothing set|kids clothing|children clothing|kids' clothing|boutique)\b/i;
     const relevantResults = results.filter(item => classifyFashionSource(item, latestResearchData.query || "") !== "Irrelevant");
     latestPlanSources = relevantResults;
     const directKidswear = relevantResults.filter(item => classifyFashionSource(item, latestResearchData.query || "") === "Direct Kidswear Competitor");
