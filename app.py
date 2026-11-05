@@ -36,9 +36,9 @@ def research():
                 "Content-Type": "application/json",
             },
             json={
-                "query": query,
+                "query": f"{query} clothing apparel fashion trends products Tunisia",
                 "search_depth": "basic",
-                "max_results": 5,
+                "max_results": 8,
                 "topic": "general",
                 "include_answer": True,
             },
@@ -58,7 +58,7 @@ def research():
             })
 
         return jsonify({
-            "query": query,
+                "query": f"{query} clothing apparel fashion trends products Tunisia",
             "answer": payload.get("answer", ""),
             "results": results,
             "response_time": payload.get("response_time"),
