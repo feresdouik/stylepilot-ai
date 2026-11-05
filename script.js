@@ -147,6 +147,9 @@ if (buildPlanBtn) {
       return fashionTerms.test(sourceText);
     });
     latestPlanSources = relevantResults;
+    const localEvidencePattern = /\.tn\b|\bTND\b|\bDT\b|\bTunisia\b|\bTunisian\b|\bSousse\b|\bSfax\b|\bMonastir\b|\bNabeul\b|\bBizerte\b|\bKairouan\b|\bAriana\b|\bBen Arous\b/i;
+    const localSources = relevantResults.filter(item => localEvidencePattern.test([item.url || "", item.title || "", item.content || ""].join(" ")));
+    const internationalSources = relevantResults.filter(item => !localSources.includes(item));
     const query = (latestResearchData.query || "").toLowerCase();
     const evidence = [latestResearchData.answer || "", ...relevantResults.map(item => item.content || "")].join(" ").toLowerCase();
     const signals = [
@@ -197,7 +200,7 @@ if (buildPlanBtn) {
     panel.appendChild(heading);
     const note = document.createElement("p");
     note.className = "plan-note";
-    note.textContent = "Relevant fashion sources found: " + relevantResults.length + " of " + results.length + ". Research signals: " + observed + ". These are market research signals, not proof of local sales demand.";
+    note.textContent = "Fashion sources: " + relevantResults.length + " of " + results.length + ". Tunisia-related evidence: " + localSources.length + ". International inspiration: " + internationalSources.length + ". " + (localSources.length ? "Local references detected; verify they are actual retailers or market evidence." : "No clear Tunisia-specific retail evidence found. Treat these trends as international inspiration and validate locally before buying stock or spending on ads.") + " Signals: " + observed + ". Search results are not proof of sales demand.";
     panel.appendChild(note);
     const grid = document.createElement("div");
     grid.className = "marketing-plan-grid";
@@ -216,7 +219,7 @@ if (buildPlanBtn) {
     panel.appendChild(grid);
     const sourceLine = document.createElement("p");
     sourceLine.className = "plan-sources";
-    sourceLine.textContent = "Plan based on these relevant sources: " + relevantResults.slice(0, 5).map(item => item.title || "Source").join(" · ");
+    sourceLine.textContent = "Fashion sources: " + relevantResults.slice(0, 5).map(item => item.title || "Source").join(" / ") + (localSources.length ? " | Tunisia-related: " + localSources.map(item => item.title || "Source").join(" / ") : " | No clearly local Tunisian retail source detected.");
     panel.appendChild(sourceLine);
     panel.classList.remove("hidden");
     if ($("copyMarketingPlanBtn")) $("copyMarketingPlanBtn").disabled = false;
