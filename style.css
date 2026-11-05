@@ -20,3 +20,6 @@
 .marketing-plan-card strong{font-size:10px;line-height:1.6;color:var(--lime)}
 .plan-sources{margin:13px 0 0}
 @media(max-width:760px){.marketing-plan-grid{grid-template-columns:1fr}}
+
+#copyMarketingPlanBtn:disabled{opacity:.45;cursor:not-allowed}
+#copyMarketingPlanBtn:not(:disabled):hover{background:#1a3524}
