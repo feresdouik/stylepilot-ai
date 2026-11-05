@@ -36,7 +36,7 @@ def research():
                 "Content-Type": "application/json",
             },
             json={
-                "query": f"{query} Tunisia Tunisian clothing retailers boutiques local market prices TND DT apparel fashion products",
+                "query": f"{query} Tunisia Tunisian clothing retailers boutiques online shops local brands product listings prices apparel fashion products",
                 "search_depth": "basic",
                 "max_results": 8,
                 "topic": "general",
