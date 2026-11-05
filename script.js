@@ -133,49 +133,69 @@ document.querySelectorAll(".research-chip").forEach((chip) => {
 });
 
 
-// Build practical tests from the themes actually present in the latest Tavily results.
+// Build a plan only from sources that contain real fashion / apparel evidence.
 const buildPlanBtn = $("buildMarketingPlanBtn");
 if (buildPlanBtn) {
   buildPlanBtn.addEventListener("click", () => {
     const panel = $("marketingPlan");
     if (!latestResearchData || !panel) return;
     const results = Array.isArray(latestResearchData.results) ? latestResearchData.results : [];
-    const evidence = [latestResearchData.answer || "", ...results.map(item => item.content || "")].join(" ").toLowerCase();
+    const fashionTerms = /\b(clothing|apparel|fashion|garment|outfit|kidswear|childrenswear|streetwear|wearable|t-shirt|tshirt|hoodie|sweatshirt|tracksuit|jeans|dress|fabric|cotton|boutique|fashion brand|clothing set|kids clothing|children clothing|kids' clothing|retailer|collection)\b/i;
+    const relevantResults = results.filter(item => {
+      const sourceText = [item.title || "", item.content || "", item.url || ""].join(" ");
+      return fashionTerms.test(sourceText);
+    });
+    const query = (latestResearchData.query || "").toLowerCase();
+    const evidence = [latestResearchData.answer || "", ...relevantResults.map(item => item.content || "")].join(" ").toLowerCase();
     const signals = [
       ["oversized / boxy fit", /oversiz|boxy|relaxed fit/.test(evidence)],
       ["baggy / wide-leg bottoms", /baggy|wide[- ]leg|jorts|cargo pants/.test(evidence)],
-      ["graphic / racing details", /graphic|print|racing|motorsport/.test(evidence)],
-      ["minimal / neutral styling", /minimal|neutral|black|monochrome/.test(evidence)],
-      ["heavyweight fabrics", /heavyweight|heavy weight|fleece|gsm|thick cotton/.test(evidence)]
+      ["graphic / racing details", /graphic print|graphic tee|racing|motorsport/.test(evidence)],
+      ["minimal / neutral styling", /minimal|neutral palette|monochrome/.test(evidence)],
+      ["heavyweight fabrics", /heavyweight|heavy weight|fleece|\b\d{2,3} gsm\b|thick cotton/.test(evidence)],
+      ["matching sets", /matching set|co-ord|coordinated set|two-piece set/.test(evidence)]
     ].filter(item => item[1]).map(item => item[0]);
-    const observed = signals.length ? signals.slice(0, 3).join(", ") : "the themes and product positioning in the sources";
-    const sourceNames = results.slice(0, 3).map(item => item.title || "Source").filter(Boolean);
+
+    panel.replaceChildren();
+    if (relevantResults.length < 2) {
+      const heading = document.createElement("h3");
+      heading.textContent = "Not enough relevant fashion evidence";
+      const message = document.createElement("p");
+      message.className = "plan-note";
+      message.textContent = "The search returned fewer than two sources that clearly discuss clothing or fashion. StylePilot will not invent trend signals or build a marketing plan from unrelated education, startup or travel pages. Try a more specific query such as: \"" + (query.includes("kid") ? "kids clothing sets trends Tunisia retailers" : "men's streetwear clothing trends Tunisia retailers") + "\".";
+      panel.append(heading, message);
+      panel.classList.remove("hidden");
+      if ($("copyMarketingPlanBtn")) $("copyMarketingPlanBtn").disabled = true;
+      panel.scrollIntoView({behavior:"smooth", block:"nearest"});
+      return;
+    }
+
+    const observed = signals.length ? signals.slice(0, 3).join(", ") : "fashion topics covered by the relevant sources";
     const cards = [
       {
         title: "01 · Product test",
         body: signals.length
-          ? "Test one low-quantity sample that uses " + observed + ". Keep the first run small or use pre-orders; confirm demand before restocking."
-          : "Choose one product idea that appears repeatedly in the research answer or source snippets. Test with a sample or pre-orders before buying stock.",
-        action: "Measure confirmed orders, not likes or messages."
+          ? "Test one small-batch product built around this research signal: " + observed + ". Check local competitors, sizes and price points before ordering stock."
+          : "Choose one product category explicitly discussed by the relevant fashion sources. Validate local price, sizes and demand with a sample or pre-orders before buying stock.",
+        action: "Measure confirmed orders and gross margin, not likes or messages."
       },
       {
         title: "02 · Content test",
-        body: "Create a 10–15 second Reel showing the fit, fabric and details of the product. Use the strongest observed angle (" + observed + ") as the opening hook, then show front, back and close-up views.",
-        action: "Publish two different hooks for the same product and compare saves, profile visits and serious enquiries."
+        body: "Create a 10–15 second Reel showing the actual product, fit, fabric and details. Use only a feature confirmed by the relevant sources as the opening hook.",
+        action: "Test two hooks for the same product and compare saves, profile visits and serious enquiries."
       },
       {
         title: "03 · Ad test",
-        body: "Run two small creative tests: one focused on the product benefit and one focused on styling / outfit inspiration. Show price, available sizes and cash-on-delivery information clearly.",
-        action: "Track cost per confirmed order and pause the weaker creative; don't scale based on message volume alone."
+        body: "Test two creatives for the same product: one focused on its practical benefit and one showing a complete outfit. Display the real price, available sizes, delivery and cash-on-delivery terms.",
+        action: "Track cost per confirmed order and profit after product and delivery costs. Do not scale based on message volume alone."
       }
     ];
-    panel.replaceChildren();
     const heading = document.createElement("h3");
-    heading.textContent = "Your evidence-based marketing plan";
+    heading.textContent = "Your research-led marketing plan";
     panel.appendChild(heading);
     const note = document.createElement("p");
     note.className = "plan-note";
-    note.textContent = "Research signals detected: " + observed + ". These are test ideas based on search results, not proof of Tunisian sales demand.";
+    note.textContent = "Relevant fashion sources found: " + relevantResults.length + " of " + results.length + ". Research signals: " + observed + ". These are market research signals, not proof of local sales demand.";
     panel.appendChild(note);
     const grid = document.createElement("div");
     grid.className = "marketing-plan-grid";
@@ -192,12 +212,10 @@ if (buildPlanBtn) {
       grid.appendChild(card);
     });
     panel.appendChild(grid);
-    if (sourceNames.length) {
-      const sourceLine = document.createElement("p");
-      sourceLine.className = "plan-sources";
-      sourceLine.textContent = "Based on sources returned: " + sourceNames.join(" · ");
-      panel.appendChild(sourceLine);
-    }
+    const sourceLine = document.createElement("p");
+    sourceLine.className = "plan-sources";
+    sourceLine.textContent = "Plan based on these relevant sources: " + relevantResults.slice(0, 5).map(item => item.title || "Source").join(" · ");
+    panel.appendChild(sourceLine);
     panel.classList.remove("hidden");
     if ($("copyMarketingPlanBtn")) $("copyMarketingPlanBtn").disabled = false;
     panel.scrollIntoView({behavior:"smooth", block:"nearest"});
