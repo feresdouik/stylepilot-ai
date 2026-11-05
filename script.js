@@ -41,3 +41,59 @@ document.querySelectorAll(".copy-btn").forEach(button => {
     }
   });
 });
+
+// Tavily-powered market research (requires the local Flask backend and a private .env key).
+const researchBtn = $("researchBtn");
+if (researchBtn) {
+  researchBtn.addEventListener("click", async () => {
+    const query = sentenceCase($("researchQuery").value);
+    const status = $("researchStatus");
+    const answer = $("researchAnswer");
+    const sources = $("researchSources");
+    if (!query) {
+      status.textContent = "Enter a research question first.";
+      return;
+    }
+    researchBtn.disabled = true;
+    researchBtn.textContent = "Researching...";
+    status.textContent = "Searching the web for useful fashion-market information...";
+    answer.classList.add("hidden");
+    answer.textContent = "";
+    sources.replaceChildren();
+    try {
+      const response = await fetch("/api/research", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({query})
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Research request failed.");
+      answer.textContent = data.answer || "Tavily returned sources but no short answer. Explore the links below.";
+      answer.classList.remove("hidden");
+      if (Array.isArray(data.results) && data.results.length) {
+        const heading = document.createElement("h3");
+        heading.textContent = "Sources";
+        sources.appendChild(heading);
+        data.results.forEach((item) => {
+          const card = document.createElement("article");
+          card.className = "source-card";
+          const link = document.createElement("a");
+          link.href = item.url;
+          link.target = "_blank";
+          link.rel = "noopener noreferrer";
+          link.textContent = item.title || "Open source";
+          const snippet = document.createElement("p");
+          snippet.textContent = item.content || "";
+          card.append(link, snippet);
+          sources.appendChild(card);
+        });
+      }
+      status.textContent = "Research complete · " + (data.results?.length || 0) + " sources found.";
+    } catch (error) {
+      status.textContent = error.message + " Check that the local server is running and your Tavily key is set in .env.";
+    } finally {
+      researchBtn.disabled = false;
+      researchBtn.innerHTML = 'Research the market <span>↗</span>';
+    }
+  });
+}
