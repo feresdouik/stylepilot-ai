@@ -51,6 +51,7 @@ document.querySelectorAll(".copy-btn").forEach(button => {
 // Tavily-powered market research (requires the local Flask backend and a private .env key).
 const researchBtn = $("researchBtn");
 let latestResearchData = null;
+let latestPlanSources = [];
 if (researchBtn) {
   researchBtn.addEventListener("click", async () => {
     const query = sentenceCase($("researchQuery").value);
@@ -140,11 +141,12 @@ if (buildPlanBtn) {
     const panel = $("marketingPlan");
     if (!latestResearchData || !panel) return;
     const results = Array.isArray(latestResearchData.results) ? latestResearchData.results : [];
-    const fashionTerms = /\b(clothing|apparel|fashion|garment|outfit|kidswear|childrenswear|streetwear|wearable|t-shirt|tshirt|hoodie|sweatshirt|tracksuit|jeans|dress|fabric|cotton|boutique|fashion brand|clothing set|kids clothing|children clothing|kids' clothing|retailer|collection)\b/i;
+    const fashionTerms = /\b(clothing|apparel|fashion|garment|outfit|kidswear|childrenswear|streetwear|t-shirt|tshirt|hoodie|sweatshirt|tracksuit|jeans|clothing set|kids clothing|children clothing|kids' clothing|boutique)\b/i;
     const relevantResults = results.filter(item => {
       const sourceText = [item.title || "", item.content || "", item.url || ""].join(" ");
       return fashionTerms.test(sourceText);
     });
+    latestPlanSources = relevantResults;
     const query = (latestResearchData.query || "").toLowerCase();
     const evidence = [latestResearchData.answer || "", ...relevantResults.map(item => item.content || "")].join(" ").toLowerCase();
     const signals = [
@@ -230,7 +232,7 @@ if (copyPlanBtn) {
     if (!latestResearchData) return;
     const planText = $("marketingPlan")?.innerText || "";
     if (!planText) return;
-    const sourceText = (latestResearchData.results || []).map((item, index) =>
+    const sourceText = latestPlanSources.map((item, index) =>
       `${index + 1}. ${item.title || "Source"} — ${item.url || ""}`
     ).join("\n");
     const fullText = `STYLEPILOT AI — MARKETING PLAN\nResearch: ${latestResearchData.query || ""}\n\n${planText}\n\nSOURCE LINKS\n${sourceText}`;
