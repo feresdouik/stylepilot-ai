@@ -47,19 +47,19 @@ function classifyFashionSource(item, researchQuery = ""){
     hostname = parsed.hostname.toLowerCase();
     pathname = parsed.pathname.toLowerCase();
   } catch {}
-  const socialPlatform = /(^|\\.)((facebook|instagram|tiktok|pinterest)\\.com)$/.test(hostname);
-  const localMention = /\\b(Tunisia|Tunisian|Tunisie|Tunisien(ne)?s?|en Tunisie|livraison partout en Tunisie|Tunis|Sousse|Sfax|Monastir|Nabeul|Bizerte|Kairouan|Ariana|Ben Arous)\\b|\\+216|\\bTND\\b/i.test(text);
+  const socialPlatform = /(^|\.)((facebook|instagram|tiktok|pinterest)\.com)$/.test(hostname);
+  const localMention = /\b(Tunisia|Tunisian|Tunisie|Tunisien(ne)?s?|en Tunisie|livraison partout en Tunisie|Tunis|Sousse|Sfax|Monastir|Nabeul|Bizerte|Kairouan|Ariana|Ben Arous)\b|\+216|\bTND\b/i.test(text);
   const localDomain = hostname.endsWith(".tn");
   const localEvidence = localDomain || localMention;
-  const kidsQuery = /\\b(kids?|children|childrenswear|kidswear|baby|babies|toddler|infant|boys|girls|enfants?|bébé|bebe)\\b/i.test(researchQuery);
-  const kidsTerms = /\\b(kidswear|childrenswear|kids clothing|children's clothing|kids' clothing|children clothing|children's fashion|kids fashion|baby clothes|kids sets|children's sets|matching sets|ensembles? enfants?|vêtements pour enfants|vetements pour enfants|vêtements enfants|vetements enfants|tenue enfant|survêtement enfant|survetement enfant|bébé|bebe|babywear|enfant|enfants|fille|garçon|garcons|filles)\\b/i;
+  const kidsQuery = /\b(kids?|children|childrenswear|kidswear|baby|babies|toddler|infant|boys|girls|enfants?|bébé|bebe)\b/i.test(researchQuery);
+  const kidsTerms = /\b(kidswear|childrenswear|kids clothing|children's clothing|kids' clothing|children clothing|children's fashion|kids fashion|baby clothes|kids sets|children's sets|matching sets|ensembles? enfants?|vêtements pour enfants|vetements pour enfants|vêtements enfants|vetements enfants|tenue enfant|survêtement enfant|survetement enfant|bébé|bebe|babywear|enfant|enfants|fille|garçon|garcons|filles)\b/i;
   const kidsProductInTitleOrUrl = kidsTerms.test(title) || kidsTerms.test(pathname.replace(/[-_/]+/g, " "));
-  const productPageSignal = /\\b(product|products|shop|shop all|add to cart|buy now|collection|category|catalogue|catalog|store|online shop|online store|ensemble|sets?|vêtements|vetements|robe|t-shirt|sweat|pyjama)\\b/i.test(title + " " + pathname + " " + text.slice(0, 700));
-  const editorialSignal = /\\b(brand(s)? worth knowing|must[- ]know|where to shop|guide to|fashion brands|clothing brands|shopping guide|top brands|best brands|directory|blog|editorial)\\b/i.test(title + " " + pathname);
-  const commerceSignal = /\\b(shop|shop now|online store|online shop|add to cart|product listing|buy online|order online|price|prices|prix|livraison|delivery|collection|catalogue|catalog|ready-to-wear|prêt-à-porter|disponible|commander|commande)\\b/i.test(text);
-  const socialOrderSignal = /\\b(dm|direct message|message us|send us a message|order by message|order via|commandez|commander|commande|inbox|whatsapp|livraison|delivery|cash on delivery|paiement à la livraison|prix|dt|tnd|tailles disponibles|available sizes|disponible)\\b/i.test(text);
+  const productPageSignal = /\b(product|products|shop|shop all|add to cart|buy now|collection|category|catalogue|catalog|store|online shop|online store|ensemble|sets?|vêtements|vetements|robe|t-shirt|sweat|pyjama)\b/i.test(title + " " + pathname + " " + text.slice(0, 700));
+  const editorialSignal = /\b(brand(s)? worth knowing|must[- ]know|where to shop|guide to|fashion brands|clothing brands|shopping guide|top brands|best brands|directory|blog|editorial)\b/i.test(title + " " + pathname);
+  const commerceSignal = /\b(shop|shop now|online store|online shop|add to cart|product listing|buy online|order online|price|prices|prix|livraison|delivery|collection|catalogue|catalog|ready-to-wear|prêt-à-porter|disponible|commander|commande)\b/i.test(text);
+  const socialOrderSignal = /\b(dm|direct message|message us|send us a message|order by message|order via|commandez|commander|commande|inbox|whatsapp|livraison|delivery|cash on delivery|paiement à la livraison|prix|dt|tnd|tailles disponibles|available sizes|disponible)\b/i.test(text);
   const socialSellerSignal = socialPlatform && productPageSignal && socialOrderSignal;
-  const fashionSignal = /\\b(clothing|apparel|fashion|garment|outfit|kidswear|childrenswear|streetwear|hoodie|sweatshirt|tracksuit|jeans|t-shirt|boutique|brand|ready-to-wear|prêt-à-porter|vêtement|vetement|ensemble|robe|pyjama)\\b/i.test(text);
+  const fashionSignal = /\b(clothing|apparel|fashion|garment|outfit|kidswear|childrenswear|streetwear|hoodie|sweatshirt|tracksuit|jeans|t-shirt|boutique|brand|ready-to-wear|prêt-à-porter|vêtement|vetement|ensemble|robe|pyjama)\b/i.test(text);
   if (editorialSignal) return "Irrelevant";
   if (!fashionSignal && !kidsTerms.test(text)) return "Irrelevant";
   if (kidsQuery && !kidsTerms.test(text) && !kidsProductInTitleOrUrl) return "Irrelevant";
