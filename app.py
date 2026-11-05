@@ -91,7 +91,7 @@ def research():
         ),
         (
             "Meta Ads Library",
-            f"site:facebook.com/ads/library {query} Tunisia active ads advertiser ad library",
+            f'site:facebook.com/ads/library "kids clothing" OR "baby clothes" OR "children clothing" Tunisia Tunisie active',
         ),
         (
             "French and Arabic local results",
