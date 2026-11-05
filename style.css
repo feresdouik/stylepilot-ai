@@ -23,3 +23,24 @@
 
 #copyMarketingPlanBtn:disabled{opacity:.45;cursor:not-allowed}
 #copyMarketingPlanBtn:not(:disabled):hover{background:#1a3524}
+
+
+/* Accessibility and mobile interaction polish */
+:focus-visible{outline:2px solid var(--lime);outline-offset:3px}
+button:disabled{cursor:not-allowed}
+.source-card strong{color:var(--lime);font-size:12px}
+.source-classification{display:block;margin-top:7px;color:#b6c9a0;font-size:9px;letter-spacing:.3px}
+@media(max-width:480px){
+  main{padding-left:14px;padding-right:14px}
+  .panel,.research-panel{padding:16px}
+  .hero h1{font-size:clamp(36px,11vw,48px)}
+  .topbar{height:64px}
+  .status{letter-spacing:.7px}
+  .research-shortcuts{width:100%}
+  .research-chip{min-height:36px}
+  .copy-btn{min-height:32px}
+  footer{font-size:8px}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}
+}
