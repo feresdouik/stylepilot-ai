@@ -46,7 +46,7 @@ def research():
                 "Content-Type": "application/json",
             },
             json={
-                "query": f"{query} Tunisia Tunisian local clothing shops boutiques online stores product listings prices TND DT sizes collections Facebook Instagram retailers",
+                "query": f"{query} Tunisia Tunisian online clothing sellers ecommerce shops product pages current prices TND DT order online delivery cash on delivery Facebook Instagram sellers DM WhatsApp. Prioritize active product listings and posts with clear purchase instructions; exclude general fashion articles, trend roundups, store directories, and pages that only mention clothing without showing how to buy.",
                 "search_depth": "advanced",
                 "max_results": 12,
                 "topic": "general",
