@@ -64,7 +64,8 @@ function classifyFashionSource(item, researchQuery = ""){
   const commerceSignal = /\b(shop|shop now|online store|online shop|add to cart|product listing|buy online|order online|price|prices|prix|livraison|delivery|collection|catalogue|catalog|ready-to-wear|prêt-à-porter|disponible|commander|commande|whatsapp|messenger|instagram dm|send a message|inbox|cash on delivery|paiement à la livraison)\b/i.test(text);
   const socialOrderSignal = /\b(dm|direct message|message us|send us a message|order by message|order via|messenger|commandez|commander|commande|inbox|whatsapp|livraison|delivery|cash on delivery|paiement à la livraison|prix|dt|tnd|tailles disponibles|available sizes|disponible|numéro|numero|téléphone|telephone)\b/i.test(text);
   const hasClearProduct = productPageSignal && /\b(kids?|children|childrenswear|kidswear|baby|enfant|enfants|bébé|bebe|fille|garçon|garcons|filles|clothing|vêtement|vetement|ensemble|robe|t-shirt|sweat|pyjama|apparel|fashion)\b/i.test(text);
-  const hasOrderEvidence = commerceSignal && socialOrderSignal;
+  const explicitOrderSignal = /\b(order now|order online|place an order|to order|order via|order by|dm to order|message to order|commander maintenant|pour commander|commandez|اطلب الآن|للطلب|للحجز|تأكيد الطلب)\b/i.test(text);
+  const hasOrderEvidence = commerceSignal && explicitOrderSignal;
   const storeLocatorOnly = /\b(store locator|our stores|find a store|stores in tunisia|store locations|magasins en tunisie)\b/i.test(title + " " + pathname + " " + text.slice(0, 1400));
   const verifiedOnlineSeller = localEvidence && hasClearProduct && hasOrderEvidence && !storeLocatorOnly;
   const fashionSignal = /\b(clothing|apparel|fashion|garment|outfit|kidswear|childrenswear|streetwear|hoodie|sweatshirt|tracksuit|jeans|t-shirt|boutique|brand|ready-to-wear|prêt-à-porter|vêtement|vetement|ensemble|robe|pyjama)\b/i.test(text);
@@ -196,7 +197,7 @@ if (researchBtn) {
         return counts;
       }, {});
       const evidenceSummary = [
-        "Search completed: " + sourceItems.length + " pages returned.",
+        "Search completed: " + sourceItems.length + " unique pages returned across " + (data.search_lanes || 1) + " targeted searches (" + (data.successful_lanes || 1) + " successful).",
         "Verified Meta Ads Library ads: " + (categoryCounts["Verified Meta Ad"] || 0) + ".",
         "Verified local online sellers: " + (categoryCounts["Verified Online Seller"] || 0) + ".",
         "Potential local competitors (sales not verified): " + (categoryCounts["Potential Competitor"] || 0) + ".",
