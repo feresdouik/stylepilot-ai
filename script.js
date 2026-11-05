@@ -93,13 +93,14 @@ function classifyFashionSource(item, researchQuery = ""){
   const commerceSignal = /\b(shop|shop now|online store|online shop|add to cart|product listing|buy now|buy online|order online|price|prices|prix|livraison|delivery|collection|catalogue|catalog|available|disponible|commander|commande|whatsapp|messenger|instagram dm|send a message|inbox|cash on delivery|paiement à la livraison|payment on delivery)\b/i.test(text);
   const explicitOrderSignal = /\b(order now|order online|place an order|for orders|to order|order via|order by|dm to order|message to order|commander maintenant|pour commander|commandez|commande par dm|commander par dm|dm pour commander|commande via whatsapp|order via whatsapp|send us a message|message us to order|اطلب الآن|اطلب عبر|للطلب|تأكيد الطلب)\b/i.test(text);
   const verifiedOrderEvidence = commerceSignal && explicitOrderSignal;
+  const conflictingForeignContact = /\+20\d{8,}/.test(text) && !/\+216/.test(text) && !isLocalDomain;
 
   // An individual ad needs its own ID and matching local product evidence.
   if (isIndividualMetaAd && localEvidence && hasRelevantProduct) return "Verified Meta Ad";
 
   // A page archive is not an individual ad; it can only support seller status with explicit order evidence.
   const validSellerSource = socialPlatform || isPageAdsArchive || isLocalDomain;
-  if (localEvidence && hasRelevantProduct && verifiedOrderEvidence && validSellerSource) {
+  if (localEvidence && hasRelevantProduct && verifiedOrderEvidence && validSellerSource && !conflictingForeignContact) {
     return "Verified Online Seller";
   }
 
@@ -347,7 +348,7 @@ if (buildPlanBtn) {
     panel.appendChild(heading);
     const note = document.createElement("p");
     note.className = "plan-note";
-    note.textContent = "Relevant sources: " + relevantResults.length + " of " + results.length + ". Verified Meta Ads Library ads: " + relevantResults.filter(item => classifyFashionSource(item, latestResearchData.query || "") === "Verified Meta Ad").length + ". Verified online sellers: " + directOnlineSellers.length + ". Potential competitors (sales not verified): " + potentialCompetitors.length + ". Other local competitors: " + localCompetitors.length + ". Tunisian fashion brands: " + localBrands.length + ". Global inspiration: " + globalSources.length + ". " + (directOnlineSellers.length ? "Online local online clothing competitors found. Check each source for comparable sets and current prices." : "No direct online local clothing competitor was verified by the available snippets. Potential references are not counted as confirmed sellers.") + " A Tunisia mention or a general children category alone is not proof of a matching product listing or local sales demand. Signals: " + observed + ". Search results are not proof of sales demand.";
+    note.textContent = "Relevant sources: " + relevantResults.length + " of " + results.length + ". Verified Meta Ads Library ads: " + relevantResults.filter(item => classifyFashionSource(item, latestResearchData.query || "") === "Verified Meta Ad").length + ". Verified online sellers: " + directOnlineSellers.length + ". Potential competitors (sales not verified): " + potentialCompetitors.length + ". Other local competitors: " + localCompetitors.length + ". Tunisian fashion brands: " + localBrands.length + ". Global inspiration: " + globalSources.length + ". " + (directOnlineSellers.length ? "Local online clothing sellers found. Check each source for comparable products and current prices." : "No direct online local clothing competitor was verified by the available snippets. Potential references are not counted as confirmed sellers.") + " A Tunisia mention or a broad category alone is not proof of a matching product listing or local sales demand. Signals: " + observed + ". Search results are not proof of sales demand.";
     panel.appendChild(note);
     const grid = document.createElement("div");
     grid.className = "marketing-plan-grid";
@@ -366,7 +367,7 @@ if (buildPlanBtn) {
     panel.appendChild(grid);
     const sourceLine = document.createElement("p");
     sourceLine.className = "plan-sources";
-    sourceLine.textContent = "VERIFIED ONLINE KIDSWEAR COMPETITORS: " + (directOnlineSellers.map(item => item.title || "Source").join(" / ") || "None identified") + " | POTENTIAL KIDSWEAR REFERENCES: " + (potentialCompetitors.map(item => item.title || "Source").join(" / ") || "None identified") + " | OTHER LOCAL COMPETITORS: " + (localCompetitors.map(item => item.title || "Source").join(" / ") || "None identified") + " | TUNISIAN FASHION BRANDS: " + (localBrands.map(item => item.title || "Source").join(" / ") || "None identified") + " | GLOBAL INSPIRATION: " + (globalSources.map(item => item.title || "Source").join(" / ") || "None identified");
+    sourceLine.textContent = "VERIFIED ONLINE CLOTHING SELLERS: " + (directOnlineSellers.map(item => item.title || "Source").join(" / ") || "None identified") + " | POTENTIAL LOCAL CLOTHING COMPETITORS: " + (potentialCompetitors.map(item => item.title || "Source").join(" / ") || "None identified") + " | OTHER LOCAL COMPETITORS: " + (localCompetitors.map(item => item.title || "Source").join(" / ") || "None identified") + " | TUNISIAN FASHION BRANDS: " + (localBrands.map(item => item.title || "Source").join(" / ") || "None identified") + " | GLOBAL INSPIRATION: " + (globalSources.map(item => item.title || "Source").join(" / ") || "None identified");
     panel.appendChild(sourceLine);
     panel.classList.remove("hidden");
     if ($("copyMarketingPlanBtn")) $("copyMarketingPlanBtn").disabled = false;
