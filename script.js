@@ -39,46 +39,64 @@ function safeHttpUrl(value) {
 function classifyFashionSource(item, researchQuery = ""){
   const url = item.url || "";
   const title = item.title || "";
-  const text = [title, item.content || ""].join(" ");
+  const content = item.content || "";
+  const text = [title, content].join(" ");
   let hostname = "";
   let pathname = "";
-  let hasMetaAdId = false;
+  let parsedUrl = null;
+  let hasIndividualAdId = false;
+  let hasPageAdId = false;
   try {
-    const parsed = new URL(url);
-    hostname = parsed.hostname.toLowerCase();
-    pathname = parsed.pathname.toLowerCase();
-    hasMetaAdId = parsed.searchParams.has("id");
+    parsedUrl = new URL(url);
+    hostname = parsedUrl.hostname.toLowerCase();
+    pathname = parsedUrl.pathname.toLowerCase();
+    hasIndividualAdId = parsedUrl.searchParams.has("id");
+    hasPageAdId = parsedUrl.searchParams.has("view_all_page_id");
   } catch {}
-  const metaAdsLibraryUrl =
-    (hostname === "facebook.com" || hostname.endsWith(".facebook.com")) &&
-    /\/ads\/library\/?/.test(pathname) && hasMetaAdId;
+
+  const isFacebook = hostname === "facebook.com" || hostname.endsWith(".facebook.com");
+  const isMetaAdsLibrary = isFacebook && /\/ads\/library\/?/.test(pathname);
+  const isIndividualMetaAd = isMetaAdsLibrary && hasIndividualAdId;
+  const isPageAdsArchive = isMetaAdsLibrary && hasPageAdId;
   const socialPlatform = /(^|\.)(facebook|instagram|tiktok|pinterest)\.com$/.test(hostname);
-  const localMention = /\b(Tunisia|Tunisian|Tunisian Arabic|Tunisian dialect|Tunisie|Tunisien(ne)?s?|en Tunisie|livraison partout en Tunisie|Tunis|Sousse|Sfax|Monastir|Nabeul|Bizerte|Kairouan|Ariana|Ben Arous)\b|\+216|\bTND\b/i.test(text);
-  const localDomain = hostname.endsWith(".tn");
-  const localEvidence = localDomain || localMention;
+
+  const localMention = /\b(Tunisia|Tunisian|Tunisie|Tunisien(ne)?s?|en Tunisie|livraison partout en Tunisie|Tunis|Sousse|Sfax|Monastir|Nabeul|Bizerte|Kairouan|Ariana|Ben Arous)\b|\+216|\bTND\b|تونس|تونسي/i.test(text);
+  const localEvidence = hostname.endsWith(".tn") || localMention;
+
   const kidsQuery = /\b(kids?|children|childrenswear|kidswear|baby|babies|toddler|infant|boys|girls|enfants?|bébé|bebe)\b/i.test(researchQuery);
-  const kidsTerms = /\b(kidswear|kidsfashion|childrenswear|kids streetwear|children's streetwear|kids clothing|children's clothing|kids' clothing|children clothing|children's fashion|kids fashion|baby clothes|kids sets|children's sets|matching sets|ensembles? enfants?|vêtements pour enfants|vetements pour enfants|vêtements enfants|vetements enfants|vêtements enfant|vetements enfant|tenue enfant|survêtement enfant|survetement enfant|bébé|bebe|babywear|enfant|enfants|fille|garçon|garcons|filles|children's? (?:summer|winter|casual|formal|newborn) clothing|kids? (?:summer|winter|casual|formal) clothing|children's? clothing sets?)\b/i;
-  const kidsProductInTitleOrUrl = kidsTerms.test(title) || kidsTerms.test(pathname.replace(/[-_/]+/g, " "));
-  const productPageSignal = /\b(product|products|shop|shop all|add to cart|buy now|collection|category|catalogue|catalog|store|online shop|online store|ensemble|sets?|vêtements|vetements|robe|t-shirt|sweat|pyjama|kidswear|kids fashion|children's clothing|vêtements enfants|vetements enfants|baby clothes)\b/i.test(title + " " + pathname + " " + text.slice(0, 1000));
-  const editorialSignal = /\b(brand(s)? worth knowing|must[- ]know|where to shop|guide to|fashion brands|clothing brands|shopping guide|top brands|best brands|directory|blog|editorial)\b/i.test(title + " " + pathname);
+  const kidsTerms = /\b(kids?|children|childrenswear|kidswear|baby|babies|toddler|infant|boys|girls|enfant|enfants|bébé|bebe|fille|filles|garçon|garcons|kids sets|matching sets|ensemble(s)? enfants?|vêtements pour enfants|vetements pour enfants|vêtements enfants|vetements enfants|vêtements enfant|vetements enfant|tenue enfant|survêtement enfant|survetement enfant|babywear|children's? (?:summer|winter|casual|formal|newborn) clothing|kids? (?:summer|winter|casual|formal) clothing|children's? clothing sets?)\b/i;
+  const kidsProductMatch = kidsTerms.test(text) || kidsTerms.test(pathname.replace(/[-_/]+/g, " "));
+
+  const fashionSignal = /\b(clothing|apparel|fashion|garment|outfit|kidswear|childrenswear|streetwear|hoodie|sweatshirt|tracksuit|jeans|t-shirt|boutique|brand|ready-to-wear|prêt-à-porter|vêtement|vetement|ensemble|robe|pyjama|jogging|survêtement|survetement|tenue|ملابس|لباس)\b/i.test(text);
+  const productSignal = /\b(product|products|shop|shop all|add to cart|buy now|collection|category|catalogue|catalog|store|online shop|online store|ensemble|set|sets|vêtements|vetements|robe|t-shirt|sweat|pyjama|kidswear|kids fashion|children's clothing|vêtements enfants|vetements enfants|baby clothes|tenue|ملابس|طقم)\b/i.test(text);
+  const hasSpecificKidsProduct = kidsProductMatch && fashionSignal && productSignal;
+
+  const editorialSignal = /\b(brand(s)? worth knowing|must[- ]know|where to shop|guide to|fashion brands|clothing brands|shopping guide|top brands|best brands|directory|blog|editorial|store locator|our stores|find a store|stores in tunisia|store locations|magasins en tunisie)\b/i.test(title + " " + pathname + " " + content.slice(0, 1400));
   const commerceSignal = /\b(shop|shop now|online store|online shop|add to cart|product listing|buy online|order online|price|prices|prix|livraison|delivery|collection|catalogue|catalog|ready-to-wear|prêt-à-porter|disponible|commander|commande|whatsapp|messenger|instagram dm|send a message|inbox|cash on delivery|paiement à la livraison)\b/i.test(text);
-  const socialOrderSignal = /\b(dm|direct message|message us|send us a message|order by message|order via|messenger|commandez|commander|commande|inbox|whatsapp|livraison|delivery|cash on delivery|paiement à la livraison|prix|dt|tnd|tailles disponibles|available sizes|disponible|numéro|numero|téléphone|telephone)\b/i.test(text);
-  const hasClearProduct = productPageSignal && /\b(kids?|children|childrenswear|kidswear|baby|enfant|enfants|bébé|bebe|fille|garçon|garcons|filles|clothing|vêtement|vetement|ensemble|robe|t-shirt|sweat|pyjama|apparel|fashion)\b/i.test(text);
-  const explicitOrderSignal = /\b(order now|order online|place an order|to order|order via|order by|dm to order|message to order|commander maintenant|pour commander|commandez|اطلب الآن|للطلب|للحجز|تأكيد الطلب)\b/i.test(text);
-  const hasOrderEvidence = commerceSignal && explicitOrderSignal;
-  const storeLocatorOnly = /\b(store locator|our stores|find a store|stores in tunisia|store locations|magasins en tunisie)\b/i.test(title + " " + pathname + " " + text.slice(0, 1400));
-  const verifiedOnlineSeller = localEvidence && hasClearProduct && hasOrderEvidence && !storeLocatorOnly;
-  const fashionSignal = /\b(clothing|apparel|fashion|garment|outfit|kidswear|childrenswear|streetwear|hoodie|sweatshirt|tracksuit|jeans|t-shirt|boutique|brand|ready-to-wear|prêt-à-porter|vêtement|vetement|ensemble|robe|pyjama)\b/i.test(text);
-  if (metaAdsLibraryUrl) return "Verified Meta Ad";
-  if (editorialSignal) return "Irrelevant";
-  if (!fashionSignal && !kidsTerms.test(text)) return "Irrelevant";
-  if (kidsQuery && !kidsTerms.test(text) && !kidsProductInTitleOrUrl) return "Irrelevant";
-  if (verifiedOnlineSeller) return "Verified Online Seller";
-  if (kidsQuery && localEvidence && (kidsTerms.test(text) || kidsProductInTitleOrUrl)) return "Potential Competitor";
-  if (!kidsQuery && localEvidence && socialPlatform && productPageSignal && socialOrderSignal) return "Verified Online Seller";
-  if (!kidsQuery && localEvidence && commerceSignal && productPageSignal) return "Local competitor";
-  if (localEvidence) return "Local Fashion Brand";
-  if (kidsQuery && !(kidsTerms.test(text) && (productPageSignal || commerceSignal || socialOrderSignal))) return "Irrelevant";
+  const explicitOrderSignal = /\b(order now|order online|place an order|to order|order via|order by|dm to order|message to order|commander maintenant|pour commander|commandez|commande par dm|commander par dm|dm pour commander|commande via whatsapp|order via whatsapp|اطلب الآن|اطلب عبر|للطلب|للحجز|تأكيد الطلب)\b/i.test(text);
+  const verifiedOrderEvidence = commerceSignal && explicitOrderSignal;
+  const storeLocatorOnly = /\b(store locator|our stores|find a store|stores in tunisia|store locations|magasins en tunisie|visit our store|visit our stores)\b/i.test(title + " " + pathname + " " + content.slice(0, 1400));
+
+  // An individual Ad Library ad is verified only when its own indexed evidence
+  // matches the requested product category and Tunisia; an arbitrary ad ID is not enough.
+  if (isIndividualMetaAd && localEvidence && hasSpecificKidsProduct) return "Verified Meta Ad";
+
+  if (editorialSignal || storeLocatorOnly) return "Irrelevant";
+  if (kidsQuery && !hasSpecificKidsProduct) return "Irrelevant";
+  if (!fashionSignal && !kidsProductMatch) return "Irrelevant";
+
+  // A page-scoped Ad Library archive can support seller verification, but is not
+  // itself counted as an individual ad. Require product, local and order evidence.
+  const validSellerSource = socialPlatform || isPageAdsArchive || hostname.endsWith(".tn");
+  if (localEvidence && hasSpecificKidsProduct && verifiedOrderEvidence && validSellerSource) {
+    return "Verified Online Seller";
+  }
+
+  if (kidsQuery && localEvidence && hasSpecificKidsProduct) return "Potential Competitor";
+  if (!kidsQuery && localEvidence && socialPlatform && productSignal && commerceSignal) return "Verified Online Seller";
+  if (!kidsQuery && localEvidence && commerceSignal && productSignal) return "Local competitor";
+  if (localEvidence && fashionSignal) return "Local Fashion Brand";
+  if (kidsQuery) return "Irrelevant";
   return "Global Inspiration";
 }
 $("generateBtn").addEventListener("click", () => {
@@ -136,7 +154,7 @@ if (copyResearchBtn) {
       $("researchAnswer")?.textContent || "No evidence summary available.",
       "",
       "SOURCES",
-      ...(Array.isArray(data.results) ? data.results : []).map((item, index) =>
+      ...(Array.isArray(data.results) ? data.results.filter(item => classifyFashionSource(item, data.query || "") !== "Irrelevant") : []).map((item, index) =>
         (index + 1) + ". " + (item.title || "Source") + " — " + (item.url || "")
       )
     ].join("\n");
@@ -208,11 +226,11 @@ if (researchBtn) {
       answer.textContent = evidenceWarning + evidenceSummary + " Open the classified source links below. StylePilot does not present Tavily's unverified generated summary as a Tunisia market finding.";
       answer.classList.remove("hidden");
       tools?.classList.remove("hidden");
-      if (Array.isArray(data.results) && data.results.length) {
+      if (verifiedSourceItems.length) {
         const heading = document.createElement("h3");
-        heading.textContent = "Sources";
+        heading.textContent = "Relevant sources";
         sources.appendChild(heading);
-        data.results.forEach((item) => {
+        verifiedSourceItems.forEach((item) => {
           const card = document.createElement("article");
           card.className = "source-card";
           const sourceUrl = safeHttpUrl(item.url);
