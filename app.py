@@ -68,7 +68,7 @@ def research():
             })
 
         return jsonify({
-                "query": query,
+            "query": query,
             "answer": payload.get("answer", ""),
             "results": results,
             "response_time": payload.get("response_time"),
