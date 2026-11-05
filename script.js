@@ -1,14 +1,30 @@
 const $ = (id) => document.getElementById(id);
 const imageInput = $("productImage");
 const preview = $("imagePreview");
+let previewObjectUrl = null;
 imageInput.addEventListener("change", () => {
   const file = imageInput.files && imageInput.files[0];
   if (!file) return;
-  preview.src = URL.createObjectURL(file);
+  const uploadLabel = document.querySelector(".upload");
+  const uploadMessage = document.querySelector(".upload small");
+  if (!file.type.startsWith("image/")) {
+    imageInput.value = "";
+    uploadMessage.textContent = "Please choose an image file.";
+    return;
+  }
+  if (file.size > 10 * 1024 * 1024) {
+    imageInput.value = "";
+    uploadMessage.textContent = "Image must be 10 MB or smaller.";
+    return;
+  }
+  if (previewObjectUrl) URL.revokeObjectURL(previewObjectUrl);
+  previewObjectUrl = URL.createObjectURL(file);
+  preview.src = previewObjectUrl;
   preview.style.display = "block";
   document.querySelector(".upload-icon").style.display = "none";
   document.querySelector(".upload strong").textContent = file.name;
-  document.querySelector(".upload small").textContent = "Photo ready";
+  uploadMessage.textContent = "Photo ready · preview only, not uploaded";
+  uploadLabel.setAttribute("aria-label", "Selected product image: " + file.name);
 });
 function sentenceCase(value){return value.trim().replace(/\s+/g," ");}
 function safeHttpUrl(value) {
