@@ -50,6 +50,7 @@ if (researchBtn) {
     const status = $("researchStatus");
     const answer = $("researchAnswer");
     const sources = $("researchSources");
+    const tools = $("researchTools");
     if (!query) {
       status.textContent = "Enter a research question first.";
       return;
@@ -60,6 +61,7 @@ if (researchBtn) {
     answer.classList.add("hidden");
     answer.textContent = "";
     sources.replaceChildren();
+    tools?.classList.add("hidden");
     try {
       const response = await fetch("/api/research", {
         method: "POST",
@@ -70,6 +72,17 @@ if (researchBtn) {
       if (!response.ok) throw new Error(data.error || "Research request failed.");
       answer.textContent = data.answer || "Tavily returned sources but no short answer. Explore the links below.";
       answer.classList.remove("hidden");
+      tools?.classList.remove("hidden");
+      $("copyResearchBtn")?.addEventListener("click", async () => {
+        const report = [`STYLEPILOT AI MARKET RESEARCH`, `Query: ${query}`, "", data.answer || "", "", "SOURCES", ...(data.results || []).map((item, index) => `${index + 1}. ${item.title || "Source"} — ${item.url}`)].join("\n");
+        try {
+          await navigator.clipboard.writeText(report);
+          $("copyResearchBtn").textContent = "COPIED ✓";
+          setTimeout(() => $("copyResearchBtn").textContent = "COPY FULL REPORT", 1500);
+        } catch {
+          $("copyResearchBtn").textContent = "COPY UNAVAILABLE";
+        }
+      }, {once:true});
       if (Array.isArray(data.results) && data.results.length) {
         const heading = document.createElement("h3");
         heading.textContent = "Sources";
@@ -89,6 +102,7 @@ if (researchBtn) {
         });
       }
       status.textContent = "Research complete · " + (data.results?.length || 0) + " sources found.";
+      $("researchSources").scrollIntoView({behavior:"smooth",block:"nearest"});
     } catch (error) {
       status.textContent = error.message + " Check that the local server is running and your Tavily key is set in .env.";
     } finally {
@@ -97,3 +111,12 @@ if (researchBtn) {
     }
   });
 }
+
+
+// One-click research angles reuse the same secure backend endpoint.
+document.querySelectorAll(".research-chip").forEach((chip) => {
+  chip.addEventListener("click", () => {
+    $("researchQuery").value = chip.dataset.query;
+    $("researchBtn").click();
+  });
+});
