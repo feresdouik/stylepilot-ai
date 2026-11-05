@@ -184,7 +184,6 @@ if (researchBtn) {
       const localKidsCompetitors = sourceItems.filter(item => classifyFashionSource(item, query) === "Verified Online Seller");
       const metaAdSources = sourceItems.filter(item => classifyFashionSource(item, query) === "Verified Meta Ad");
       const potentialKidsReferences = sourceItems.filter(item => classifyFashionSource(item, query) === "Potential Competitor");
-      const localSocialSellers = sourceItems.filter(item => classifyFashionSource(item, query) === "Verified Online Seller");
       const evidenceWarning = verifiedSourceItems.length
         ? "Evidence note: Meta Ads Library links are counted separately from sellers. A commercial social post is not automatically a paid ad. Verify each seller\u2019s current products, prices and delivery manually. "
         : "Evidence warning: none of the returned sources passed the relevance checks. No reliable Tunisia trend or competitor finding can be made from these results. Try a narrower search. ";
@@ -262,11 +261,10 @@ if (buildPlanBtn) {
     latestPlanSources = relevantResults;
     const directKidswear = relevantResults.filter(item => classifyFashionSource(item, latestResearchData.query || "") === "Verified Online Seller");
     const potentialKids = relevantResults.filter(item => classifyFashionSource(item, latestResearchData.query || "") === "Potential Competitor");
-    const socialSellers = relevantResults.filter(item => classifyFashionSource(item, latestResearchData.query || "") === "Verified Online Seller");
     const localCompetitors = relevantResults.filter(item => classifyFashionSource(item, latestResearchData.query || "") === "Local competitor");
     const localBrands = relevantResults.filter(item => classifyFashionSource(item, latestResearchData.query || "") === "Local Fashion Brand");
     const globalSources = relevantResults.filter(item => classifyFashionSource(item, latestResearchData.query || "") === "Global Inspiration");
-    const localSources = [...directKidswear, ...potentialKids, ...socialSellers, ...localCompetitors, ...localBrands];
+    const localSources = [...directKidswear, ...potentialKids, ...localCompetitors, ...localBrands];
     const internationalSources = globalSources;
     const query = (latestResearchData.query || "").toLowerCase();
     const evidence = [latestResearchData.answer || "", ...relevantResults.map(item => item.content || "")].join(" ").toLowerCase();
@@ -337,7 +335,7 @@ if (buildPlanBtn) {
     panel.appendChild(grid);
     const sourceLine = document.createElement("p");
     sourceLine.className = "plan-sources";
-    sourceLine.textContent = "VERIFIED ONLINE KIDSWEAR COMPETITORS: " + (directKidswear.map(item => item.title || "Source").join(" / ") || "None identified") + " | POTENTIAL KIDSWEAR REFERENCES: " + (potentialKids.map(item => item.title || "Source").join(" / ") || "None identified") + " | VERIFIED ONLINE SELLERS: " + (socialSellers.map(item => item.title || "Source").join(" / ") || "None identified") + " | OTHER LOCAL COMPETITORS: " + (localCompetitors.map(item => item.title || "Source").join(" / ") || "None identified") + " | TUNISIAN FASHION BRANDS: " + (localBrands.map(item => item.title || "Source").join(" / ") || "None identified") + " | GLOBAL INSPIRATION: " + (globalSources.map(item => item.title || "Source").join(" / ") || "None identified");
+    sourceLine.textContent = "VERIFIED ONLINE KIDSWEAR COMPETITORS: " + (directKidswear.map(item => item.title || "Source").join(" / ") || "None identified") + " | POTENTIAL KIDSWEAR REFERENCES: " + (potentialKids.map(item => item.title || "Source").join(" / ") || "None identified") + " | OTHER LOCAL COMPETITORS: " + (localCompetitors.map(item => item.title || "Source").join(" / ") || "None identified") + " | TUNISIAN FASHION BRANDS: " + (localBrands.map(item => item.title || "Source").join(" / ") || "None identified") + " | GLOBAL INSPIRATION: " + (globalSources.map(item => item.title || "Source").join(" / ") || "None identified");
     panel.appendChild(sourceLine);
     panel.classList.remove("hidden");
     if ($("copyMarketingPlanBtn")) $("copyMarketingPlanBtn").disabled = false;
