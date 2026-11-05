@@ -12,18 +12,23 @@ imageInput.addEventListener("change", () => {
 });
 function sentenceCase(value){return value.trim().replace(/\s+/g," ");}
 
-function classifyFashionSource(item){
+function classifyFashionSource(item, researchQuery = ""){
   const url = item.url || "";
   const text = [item.title || "", item.content || ""].join(" ");
   let hostname = "";
   try { hostname = new URL(url).hostname.toLowerCase(); } catch {}
   const localMention = /\b(Tunisia|Tunisian|Tunis|Sousse|Sfax|Monastir|Nabeul|Bizerte|Kairouan|Ariana|Ben Arous)\b/i.test(text);
   const localDomain = hostname.endsWith(".tn");
-  const commerceSignal = /\b(shop|shop now|online store|online shop|add to cart|product listing|buy online|order online|price|prices|prix|livraison|delivery|collection|catalogue|catalog)\b/i.test(text);
-  const fashionSignal = /\b(clothing|apparel|fashion|garment|outfit|kidswear|childrenswear|streetwear|hoodie|sweatshirt|tracksuit|jeans|t-shirt|boutique|brand)\b/i.test(text);
-  if ((localDomain && commerceSignal) || (localMention && commerceSignal && fashionSignal)) return "Local competitor";
-  if (localDomain || localMention) return "Local fashion brand";
-  return "Global inspiration";
+  const commerceSignal = /\b(shop|shop now|online store|online shop|add to cart|product listing|buy online|order online|price|prices|prix|livraison|delivery|collection|catalogue|catalog|ready-to-wear|prêt-à-porter)\b/i.test(text);
+  const kidsQuery = /\b(kids?|children|childrenswear|kidswear|baby|babies|toddler|infant|boys|girls)\b/i.test(researchQuery);
+  const kidsProductSignal = /\b(kids?|children|childrenswear|kidswear|baby|babies|toddler|infant|boys|girls|enfants|enfant|bébé|bebe|junior|kids'|children's)\b/i.test(text);
+  const productSignal = /\b(set|sets|two[- ]piece|co[- ]ord|matching|tracksuit|sweatshirt|hoodie|t[- ]?shirt|shirt|pants|trousers|dress|shorts|romper|clothing|apparel|garment|collection|shop|products)\b/i.test(text);
+  const fashionSignal = /\b(clothing|apparel|fashion|garment|outfit|kidswear|childrenswear|streetwear|hoodie|sweatshirt|tracksuit|jeans|t-shirt|boutique|brand|ready-to-wear|prêt-à-porter)\b/i.test(text);
+  if (!fashionSignal && !kidsProductSignal) return "Irrelevant";
+  if (kidsQuery && (localDomain || localMention) && commerceSignal && kidsProductSignal && productSignal) return "Direct Kidswear Competitor";
+  if (!kidsQuery && (localDomain || localMention) && commerceSignal && productSignal) return "Local competitor";
+  if (localDomain || localMention) return "Local Fashion Brand";
+  return "Global Inspiration";
 }
 $("generateBtn").addEventListener("click", () => {
   const name = sentenceCase($("productName").value) || "Your new favourite piece";
@@ -123,7 +128,7 @@ if (researchBtn) {
           link.textContent = item.title || "Open source";
           const classification = document.createElement("small");
           classification.className = "source-classification";
-          classification.textContent = classifyFashionSource(item);
+          classification.textContent = classifyFashionSource(item, latestResearchData?.query || "");
           const snippet = document.createElement("p");
           snippet.textContent = item.content || "";
           card.append(link, classification, snippet);
@@ -164,10 +169,11 @@ if (buildPlanBtn) {
       return fashionTerms.test(sourceText);
     });
     latestPlanSources = relevantResults;
-    const localCompetitors = relevantResults.filter(item => classifyFashionSource(item) === "Local competitor");
-    const localBrands = relevantResults.filter(item => classifyFashionSource(item) === "Local fashion brand");
-    const globalSources = relevantResults.filter(item => classifyFashionSource(item) === "Global inspiration");
-    const localSources = [...localCompetitors, ...localBrands];
+    const directKidswear = relevantResults.filter(item => classifyFashionSource(item, latestResearchData.query || "") === "Direct Kidswear Competitor");
+    const localCompetitors = relevantResults.filter(item => classifyFashionSource(item, latestResearchData.query || "") === "Local competitor");
+    const localBrands = relevantResults.filter(item => classifyFashionSource(item, latestResearchData.query || "") === "Local Fashion Brand");
+    const globalSources = relevantResults.filter(item => classifyFashionSource(item, latestResearchData.query || "") === "Global Inspiration");
+    const localSources = [...directKidswear, ...localCompetitors, ...localBrands];
     const internationalSources = globalSources;
     const query = (latestResearchData.query || "").toLowerCase();
     const evidence = [latestResearchData.answer || "", ...relevantResults.map(item => item.content || "")].join(" ").toLowerCase();
@@ -219,7 +225,7 @@ if (buildPlanBtn) {
     panel.appendChild(heading);
     const note = document.createElement("p");
     note.className = "plan-note";
-    note.textContent = "Relevant fashion sources: " + relevantResults.length + " of " + results.length + ". Local competitors: " + localCompetitors.length + ". Tunisian fashion brands: " + localBrands.length + ". Global inspiration: " + globalSources.length + ". " + (localCompetitors.length ? "Potential local competitors found; open each source and confirm it sells the exact product category being researched." : "No verified local competitor signal found. A Tunisian brand mention is not proof of direct competition or sales demand.") + " " + (localBrands.length ? "Local brand references are useful for market context, not proof of product demand." : "") + " Signals: " + observed + ". Search results are not proof of sales demand.";
+    note.textContent = "Relevant sources: " + relevantResults.length + " of " + results.length + ". Direct kidswear competitors: " + directKidswear.length + ". Other local competitors: " + localCompetitors.length + ". Tunisian fashion brands: " + localBrands.length + ". Global inspiration: " + globalSources.length + ". " + (directKidswear.length ? "Potential local kidswear competitors found. Open each link and verify that it sells comparable sets." : "No direct local kidswear competitor was verified by the available search snippets. Do not label general Tunisian fashion brands as kidswear competitors.") + " A Tunisia mention or a general children category alone is not proof of a matching product listing or local sales demand. Signals: " + observed + ". Search results are not proof of sales demand.";
     panel.appendChild(note);
     const grid = document.createElement("div");
     grid.className = "marketing-plan-grid";
@@ -238,7 +244,7 @@ if (buildPlanBtn) {
     panel.appendChild(grid);
     const sourceLine = document.createElement("p");
     sourceLine.className = "plan-sources";
-    sourceLine.textContent = "LOCAL COMPETITORS: " + (localCompetitors.map(item => item.title || "Source").join(" / ") || "None identified") + " | TUNISIAN FASHION BRANDS: " + (localBrands.map(item => item.title || "Source").join(" / ") || "None identified") + " | GLOBAL INSPIRATION: " + (globalSources.map(item => item.title || "Source").join(" / ") || "None identified");
+    sourceLine.textContent = "DIRECT KIDSWEAR COMPETITORS: " + (directKidswear.map(item => item.title || "Source").join(" / ") || "None identified") + " | OTHER LOCAL COMPETITORS: " + (localCompetitors.map(item => item.title || "Source").join(" / ") || "None identified") + " | TUNISIAN FASHION BRANDS: " + (localBrands.map(item => item.title || "Source").join(" / ") || "None identified") + " | GLOBAL INSPIRATION: " + (globalSources.map(item => item.title || "Source").join(" / ") || "None identified");
     panel.appendChild(sourceLine);
     panel.classList.remove("hidden");
     if ($("copyMarketingPlanBtn")) $("copyMarketingPlanBtn").disabled = false;
