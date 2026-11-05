@@ -147,6 +147,9 @@ if (researchBtn) {
       return;
     }
     researchBtn.disabled = true;
+    if (copyResearchBtn) copyResearchBtn.disabled = true;
+    latestResearchData = null;
+    latestPlanSources = [];
     researchBtn.textContent = "Researching...";
     status.textContent = "Searching the web for useful fashion-market information...";
     answer.classList.add("hidden");
@@ -162,6 +165,7 @@ if (researchBtn) {
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Research request failed.");
       latestResearchData = data;
+      if (copyResearchBtn) copyResearchBtn.disabled = false;
       $("marketingPlan")?.classList.add("hidden");
       if ($("copyMarketingPlanBtn")) $("copyMarketingPlanBtn").disabled = true;
       $("marketingPlan")?.replaceChildren();
