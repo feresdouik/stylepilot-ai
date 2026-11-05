@@ -40,7 +40,7 @@ def research():
                 "search_depth": "basic",
                 "max_results": 8,
                 "topic": "general",
-                "include_answer": True,
+                "include_answer": False,
             },
             timeout=30,
         )
