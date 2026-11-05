@@ -26,7 +26,7 @@ function classifyFashionSource(item, researchQuery = ""){
   const localMention = /\b(Tunisia|Tunisian|Tunis|Sousse|Sfax|Monastir|Nabeul|Bizerte|Kairouan|Ariana|Ben Arous)\b/i.test(text);
   const localDomain = hostname.endsWith(".tn");
   const kidsQuery = /\b(kids?|children|childrenswear|kidswear|baby|babies|toddler|infant|boys|girls|enfants?|bébé|bebe)\b/i.test(researchQuery);
-  const kidsTerms = /\b(kidswear|childrenswear|kids clothing|children's clothing|kids' clothing|children clothing|baby clothes|kids sets|children's sets|enfants?|vêtements enfants|vetements enfants|bébé|bebe|babywear)\b/i;
+  const kidsTerms = /\b(kidswear|childrenswear|kids clothing|children's clothing|kids' clothing|children clothing|children's fashion|kids fashion|baby clothes|kids sets|children's sets|matching sets|ensembles? enfants?|vêtements pour enfants|vetements pour enfants|vêtements enfants|vetements enfants|tenue enfant|survêtement enfant|survetement enfant|bébé|bebe|babywear)\b/i;
   const kidsProductInTitleOrUrl = kidsTerms.test(title) || kidsTerms.test(pathname.replace(/[-_/]+/g, " "));
   const productPageSignal = /\b(product|products|shop|shop all|add to cart|buy now|collection|category|catalogue|catalog|store|online shop|online store)\b/i.test(title + " " + pathname + " " + text.slice(0, 500));
   const editorialSignal = /\b(brand(s)? worth knowing|must[- ]know|where to shop|guide to|fashion brands|clothing brands|shopping guide|top brands|best brands|directory|blog|editorial)\b/i.test(title + " " + pathname);
@@ -34,11 +34,13 @@ function classifyFashionSource(item, researchQuery = ""){
   const fashionSignal = /\b(clothing|apparel|fashion|garment|outfit|kidswear|childrenswear|streetwear|hoodie|sweatshirt|tracksuit|jeans|t-shirt|boutique|brand|ready-to-wear|prêt-à-porter)\b/i.test(text);
   if (editorialSignal) return "Irrelevant";
   if (!fashionSignal && !kidsTerms.test(text)) return "Irrelevant";
+  if (kidsQuery && !kidsTerms.test(text) && !kidsProductInTitleOrUrl) return "Irrelevant";
   if (kidsQuery && (localDomain || localMention) && kidsProductInTitleOrUrl && productPageSignal && commerceSignal && !editorialSignal) {
     return "Direct Kidswear Competitor";
   }
   if (!kidsQuery && (localDomain || localMention) && commerceSignal && productPageSignal && !editorialSignal) return "Local competitor";
   if (localDomain || localMention) return "Local Fashion Brand";
+  if (kidsQuery && !(kidsTerms.test(text) && (productPageSignal || commerceSignal))) return "Irrelevant";
   return "Global Inspiration";
 }
 $("generateBtn").addEventListener("click", () => {
@@ -117,7 +119,7 @@ if (researchBtn) {
       const localKidsCompetitors = sourceItems.filter(item => classifyFashionSource(item, query) === "Direct Kidswear Competitor");
       const evidenceWarning = verifiedSourceItems.length
         ? (localKidsCompetitors.length ? "Evidence note: potential local kidswear competitors were found, but verify their current products and prices manually. " : "Evidence note: no direct Tunisian kidswear-set competitor was verified. International brands are inspiration only, not proof of local demand. ")
-        : "Evidence warning: none of the returned sources passed the relevance checks. The AI draft below is unverified and must not be treated as evidence of Tunisian trends or competitors. Try a narrower search. ";
+        : "Evidence warning: none of the returned sources passed the relevance checks. No reliable Tunisia trend or competitor finding can be made from these results. Try a narrower search. ";
       const categoryCounts = sourceItems.reduce((counts, item) => {
         const label = classifyFashionSource(item, query);
         counts[label] = (counts[label] || 0) + 1;
@@ -126,7 +128,7 @@ if (researchBtn) {
       const evidenceSummary = [
         "Search completed: " + sourceItems.length + " pages returned.",
         "Verified local kidswear competitors: " + (categoryCounts["Direct Kidswear Competitor"] || 0) + ".",
-        "Other local fashion references: " + (categoryCounts["Local competitor"] || 0) + (categoryCounts["Local Fashion Brand"] || 0) + ".",
+        "Other local fashion references: " + ((categoryCounts["Local competitor"] || 0) + (categoryCounts["Local Fashion Brand"] || 0)) + ".",
         "International inspiration: " + (categoryCounts["Global Inspiration"] || 0) + ".",
         "Irrelevant pages: " + (categoryCounts["Irrelevant"] || 0) + "."
       ].join(" ");
