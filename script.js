@@ -17,9 +17,15 @@ $("generateBtn").addEventListener("click", () => {
   const details = sentenceCase($("details").value);
   const tone = $("tone").value;
   const detailLine = details ? details : "Designed for everyday comfort and effortless style.";
-  const description = `${name} — a ${category.toLowerCase()} essential made to bring confidence to your everyday look. ${detailLine} Style it your way and make it yours.`;
-  const caption = `New energy. Same effortless style. ✳\n\nMeet ${name}. ${detailLine}\n\nYour next outfit starts here. Send us a DM to order.\n\n#Streetwear #NewDrop #StylePilot`;
-  const ad = `${name} is here.\n\nUpgrade your rotation with a ${category.toLowerCase()} piece made for your everyday. ${detailLine}\n\nMessage us now to discover your size and order.`;
+  const voice = {
+    "Confident and modern": {lead:"Built for your everyday rotation.",caption:"New energy. No compromise.",cta:"Make it yours. Send us a DM to order."},
+    "Premium and minimal": {lead:"Considered style. Everyday comfort.",caption:"Less noise. Better essentials.",cta:"Discover the details. Message us to order."},
+    "Friendly and casual": {lead:"An easy favourite for everyday wear.",caption:"Your next go-to piece is here.",cta:"Like the look? Send us a DM and we'll help you order."},
+    "Bold and energetic": {lead:"Stand out. Own your look.",caption:"Fresh drop. Big energy. ✳",cta:"Get yours now. Message us to order."}
+  }[tone] || {lead:"Built for your everyday rotation.",caption:"New energy. Same effortless style. ✳",cta:"Send us a DM to order."};
+  const description = `${name} — a ${category.toLowerCase()} essential. ${voice.lead} ${detailLine} Style it your way and make it yours.`;
+  const caption = `${voice.caption}\n\nMeet ${name}. ${detailLine}\n\n${voice.cta}\n\n#Streetwear #NewDrop #StylePilot`;
+  const ad = `${name} is here.\n\n${voice.lead} ${detailLine}\n\n${voice.cta}`;
   $("description").textContent = description;
   $("caption").textContent = caption;
   $("ad").textContent = ad;
@@ -73,6 +79,7 @@ if (researchBtn) {
       if (!response.ok) throw new Error(data.error || "Research request failed.");
       latestResearchData = data;
       $("marketingPlan")?.classList.add("hidden");
+      if ($("copyMarketingPlanBtn")) $("copyMarketingPlanBtn").disabled = true;
       $("marketingPlan")?.replaceChildren();
       answer.textContent = data.answer || "Tavily returned sources but no short answer. Explore the links below.";
       answer.classList.remove("hidden");
@@ -192,6 +199,29 @@ if (buildPlanBtn) {
       panel.appendChild(sourceLine);
     }
     panel.classList.remove("hidden");
+    if ($("copyMarketingPlanBtn")) $("copyMarketingPlanBtn").disabled = false;
     panel.scrollIntoView({behavior:"smooth", block:"nearest"});
+  });
+}
+
+
+// Copy the generated plan together with the exact source URLs used by the research.
+const copyPlanBtn = $("copyMarketingPlanBtn");
+if (copyPlanBtn) {
+  copyPlanBtn.addEventListener("click", async () => {
+    if (!latestResearchData) return;
+    const planText = $("marketingPlan")?.innerText || "";
+    if (!planText) return;
+    const sourceText = (latestResearchData.results || []).map((item, index) =>
+      `${index + 1}. ${item.title || "Source"} — ${item.url || ""}`
+    ).join("\n");
+    const fullText = `STYLEPILOT AI — MARKETING PLAN\nResearch: ${latestResearchData.query || ""}\n\n${planText}\n\nSOURCE LINKS\n${sourceText}`;
+    try {
+      await navigator.clipboard.writeText(fullText);
+      copyPlanBtn.textContent = "COPIED ✓";
+      setTimeout(() => copyPlanBtn.textContent = "COPY PLAN", 1500);
+    } catch {
+      copyPlanBtn.textContent = "COPY UNAVAILABLE";
+    }
   });
 }
