@@ -79,23 +79,23 @@ def research():
     searches = [
         (
             "Tunisian online sellers",
-            f"{query} Tunisia Tunisie Tunisian online shop boutique vêtements ensembles enfants prix livraison commande WhatsApp Messenger paiement à la livraison",
+            f"{query} Tunisia Tunisie Tunisian clothing online shop boutique prices sizes delivery order WhatsApp Messenger cash on delivery",
         ),
         (
             "Facebook seller posts",
-            f"site:facebook.com {query} Tunisia Tunisie vente prix tailles disponibles livraison Messenger WhatsApp commander",
+            f"site:facebook.com {query} Tunisia Tunisie clothing fashion price sizes available delivery order Messenger WhatsApp",
         ),
         (
             "Instagram seller posts",
-            f"site:instagram.com {query} Tunisia Tunisie boutique vente prix livraison DM WhatsApp vêtements enfants",
+            f"site:instagram.com {query} Tunisia Tunisie clothing fashion boutique price delivery DM WhatsApp order",
         ),
         (
             "Meta Ads Library",
-            f'site:facebook.com/ads/library "{query}" "kids clothing" OR "baby clothes" OR "children clothing" Tunisia Tunisie active',
+            f'site:facebook.com/ads/library "{query}" Tunisia Tunisie clothing fashion apparel hoodie t-shirt jeans active',
         ),
         (
             "French and Arabic local results",
-            f"{query} تونس ملابس أطفال طقم أطفال بيع أونلاين توصيل تونس prix livraison vêtements enfants ensemble",
+            f"{query} تونس ملابس رجال ملابس موضة ستريت وير سعر توصيل تونس vêtements homme mode streetwear prix livraison commande",
         ),
     ]
 
