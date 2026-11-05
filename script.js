@@ -118,7 +118,19 @@ if (researchBtn) {
       const evidenceWarning = verifiedSourceItems.length
         ? (localKidsCompetitors.length ? "Evidence note: potential local kidswear competitors were found, but verify their current products and prices manually. " : "Evidence note: no direct Tunisian kidswear-set competitor was verified. International brands are inspiration only, not proof of local demand. ")
         : "Evidence warning: none of the returned sources passed the relevance checks. The AI draft below is unverified and must not be treated as evidence of Tunisian trends or competitors. Try a narrower search. ";
-      answer.textContent = evidenceWarning + (data.answer || "Tavily returned sources but no short answer. Explore the links below.");
+      const categoryCounts = sourceItems.reduce((counts, item) => {
+        const label = classifyFashionSource(item, query);
+        counts[label] = (counts[label] || 0) + 1;
+        return counts;
+      }, {});
+      const evidenceSummary = [
+        "Search completed: " + sourceItems.length + " pages returned.",
+        "Verified local kidswear competitors: " + (categoryCounts["Direct Kidswear Competitor"] || 0) + ".",
+        "Other local fashion references: " + (categoryCounts["Local competitor"] || 0) + (categoryCounts["Local Fashion Brand"] || 0) + ".",
+        "International inspiration: " + (categoryCounts["Global Inspiration"] || 0) + ".",
+        "Irrelevant pages: " + (categoryCounts["Irrelevant"] || 0) + "."
+      ].join(" ");
+      answer.textContent = evidenceWarning + evidenceSummary + " Open the classified source links below. StylePilot does not present Tavily's unverified generated summary as a Tunisia market finding.";
       answer.classList.remove("hidden");
       tools?.classList.remove("hidden");
       $("copyResearchBtn")?.addEventListener("click", async () => {
