@@ -58,7 +58,7 @@ def research():
             })
 
         return jsonify({
-                "query": f"{query} clothing apparel fashion trends products Tunisia",
+                "query": query,
             "answer": payload.get("answer", ""),
             "results": results,
             "response_time": payload.get("response_time"),
