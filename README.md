@@ -12,6 +12,21 @@ A responsive fashion-marketing assistant prototype for independent clothing bran
 - Source links with relevance labels and an evidence summary.
 - A basic marketing-plan draft based on sources classified as relevant.
 
+## Deploy on Render (no local Python installation required)
+
+The repository includes `render.yaml` for a guided Render Blueprint deployment.
+
+1. Sign in at [Render](https://render.com/).
+2. Open **New → Blueprint** and connect the GitHub repository `feresdouik/stylepilot-ai`.
+3. Render reads `render.yaml` and asks for the secret environment variable `TAVILY_API_KEY`.
+4. Paste your Tavily key into that Render secret field only. Do not put it in GitHub, frontend JavaScript, or chat.
+5. Create the Blueprint and wait for the web service deployment to finish.
+6. Open the generated `onrender.com` service URL. The Flask app serves the website and the `/api/research` endpoint from the same origin.
+
+The service has a health check at `/api/health`. A successful response should contain `"ok": true`.
+
+Render's free web services can spin down after 15 minutes without traffic, so the first request after idle time may take longer while the service starts.
+
 ## Run locally on Windows
 
 1. Install Python 3.10 or newer.
@@ -33,15 +48,15 @@ A responsive fashion-marketing assistant prototype for independent clothing bran
 
 The research feature needs the Flask server. Opening `index.html` directly or using the static GitHub Pages site will not provide the private backend endpoint.
 
-## Deployment note
+## Deployment configuration
 
 For a Python hosting service, install `requirements.txt` and start the app with:
 
 ```bash
-gunicorn app:app
+gunicorn app:app --bind 0.0.0.0:$PORT
 ```
 
-Set `TAVILY_API_KEY` in the host's private environment variables. If the platform requires an explicit bind address, set `HOST=0.0.0.0` and use its supplied `PORT`. Do not expose the key in frontend JavaScript.
+Set `TAVILY_API_KEY` in the host's private environment variables. Do not expose the key in frontend JavaScript.
 
 ## Honest feature boundaries
 
